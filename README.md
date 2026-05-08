@@ -1,4 +1,4 @@
-# SecureBank - Advanced Banking Application
+# Co-Banking - Advanced Banking Application
 
 A full-featured banking application built with React, featuring account management, money transfers, bill payments, and investment tracking.
 
