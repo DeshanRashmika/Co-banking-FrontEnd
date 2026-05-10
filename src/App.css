@@ -69,6 +69,13 @@
     gap: 18px;
   }
 }
+#home-image {
+  width: 100%;
+  max-width: 400px;
+  align-self: center;
+  margin-left: 300px;
+  padding-left: 200px;
+}
 
 #next-steps {
   display: flex;
