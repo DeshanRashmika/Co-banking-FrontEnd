@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 
@@ -45,9 +45,10 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary to-gray-900 flex items-center justify-center">
+    <div className="min-h-screen from-blue-500 to-purple-600 flex items-center justify-center">
       <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md">
-        <h1 className="text-3xl font-bold text-primary mb-6 text-center">
+        <img src="/src/assets/home.png" alt="" width={100}/>
+        <h1 className="text-3xl font-bold text-shadow-sky-700 mb-6 text-center">
           Create Account
         </h1>
 
@@ -127,7 +128,7 @@ export default function Register() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-secondary text-white font-semibold py-2 rounded-lg hover:bg-green-600 transition disabled:bg-gray-400"
+            className="w-full bg-secondary text-white font-semibold py-2 rounded-lg bg-green-600 transition hover:bg-green-700 disabled:bg-gray-400"
           >
             {loading ? 'Creating Account...' : 'Register'}
           </button>
