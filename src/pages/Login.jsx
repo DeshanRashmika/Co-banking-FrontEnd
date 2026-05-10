@@ -75,14 +75,9 @@ export default function Login() {
   }, [navigate, setSession]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary to-gray-900 flex items-center justify-center">
-      <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md">
-        <h1 className="text-3xl font-bold text-primary mb-6 text-center">
-          Co Banking
-        </h1>
-        {/* Google Sign-In button */}
-        <div id="google-signin" className="mb-4 flex justify-center"></div>
-        
+    <div className="min-h-screen bg-blue-500, from-blue-500 to-purple-600 flex items-center justify-center">
+      <div className="bg-white-50 rounded-lg shadow-lg p-8 w-full max-w-md">
+        <img src="/src/assets/home.png" alt="" />
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
@@ -113,11 +108,19 @@ export default function Login() {
               placeholder="Enter your password"
             />
           </div>
-
+          <form className="mt-4" align="center"></form>
+            <button
+              type="button"
+              onClick={() => navigate('/forgot-password')}
+              className="text-sm text-gray-600 hover:underline"
+            >
+              Forgot Password?
+            </button>
+          
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-secondary text-white font-semibold py-2 rounded-lg hover:bg-green-600 transition disabled:bg-gray-400"
+            className="w-full bg-secondary text-blue font-semibold py-2 rounded-lg bg-color-green-500 bg-green-600 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Logging in...' : 'Login'}
           </button>
@@ -129,6 +132,10 @@ export default function Login() {
             Register
           </a>
         </p>
+
+        {/* Google Sign-In button */}
+        <div id="google-signin" className="mb-4 flex justify-center"></div>
+        
       </div>
     </div>
   );
