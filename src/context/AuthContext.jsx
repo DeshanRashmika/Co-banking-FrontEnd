@@ -1,22 +1,27 @@
-import React, { createContext, useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useMemo } from 'react';
+import PropTypes from 'prop-types';
 import { authAPI } from '../services/api';
-
-export const AuthContext = createContext();
+import { AuthContext } from './authContext';
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    // Check if user is already logged in
+  const [user, setUser] = useState(() => {
     const token = localStorage.getItem('authToken');
     const userData = localStorage.getItem('userData');
-    if (token && userData) {
-      setUser(JSON.parse(userData));
+
+    if (!token || !userData) {
+      return null;
     }
-    setLoading(false);
-  }, []);
+
+    try {
+      return JSON.parse(userData);
+    } catch {
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('userData');
+      return null;
+    }
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const login = useCallback(async (email, password) => {
     try {
@@ -77,9 +82,18 @@ export const AuthProvider = ({ children }) => {
     setUser(userData);
   }, []);
 
+  const value = useMemo(
+    () => ({ user, loading, error, login, register, logout, setSession }),
+    [user, loading, error, login, register, logout, setSession]
+  );
+
   return (
-    <AuthContext.Provider value={{ user, loading, error, login, register, logout, setSession }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
+};
+
+AuthProvider.propTypes = {
+  children: PropTypes.node.isRequired,
 };
