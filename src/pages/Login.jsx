@@ -1,5 +1,5 @@
-import  { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { authAPI } from '../services/api';
 
@@ -9,8 +9,7 @@ export default function Login() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { login } = useAuth();
-  const { setSession } = useAuth();
+  const { login, setSession } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -38,9 +37,10 @@ export default function Login() {
     document.body.appendChild(script);
 
     const onLoad = () => {
+      const googleAccounts = globalThis.google?.accounts?.id;
 
-      if (window.google && window.google.accounts && window.google.accounts.id) {
-        window.google.accounts.id.initialize({
+      if (googleAccounts) {
+        googleAccounts.initialize({
           client_id: clientId,
           callback: async (response) => {
             try {
@@ -60,7 +60,7 @@ export default function Login() {
           },
         });
 
-        window.google.accounts.id.renderButton(
+        googleAccounts.renderButton(
           document.getElementById('google-signin'),
           { theme: 'outline', size: 'large' }
         );
@@ -70,14 +70,14 @@ export default function Login() {
     script.addEventListener('load', onLoad);
     return () => {
       script.removeEventListener('load', onLoad);
-      document.body.removeChild(script);
+      script.remove();
     };
   }, [navigate, setSession]);
 
   return (
-    <div className="min-h-screen bg-blue-500, from-blue-500 to-purple-600 flex items-center justify-center">
-      <div className="bg-white-50 rounded-lg shadow-lg p-8 w-full max-w-md">
-        <img src="/src/assets/home.png" alt="" />
+    <div className="min-h-screen bg-linear-to-br bg-amber-40 flex items-center justify-center px-4 py-10">
+      <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md">
+        <img src="/src/assets/home.png" alt="Co Banking" className="mb-6 w-full rounded-lg" />
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
@@ -86,8 +86,9 @@ export default function Login() {
           )}
 
           <div>
-            <label className="block text-gray-700 font-semibold mb-2">Email</label>
+            <label htmlFor="email" className="block text-gray-700 font-semibold mb-2">Email</label>
             <input
+              id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -98,8 +99,9 @@ export default function Login() {
           </div>
 
           <div>
-            <label className="block text-gray-700 font-semibold mb-2">Password</label>
+            <label htmlFor="password" className="block text-gray-700 font-semibold mb-2">Password</label>
             <input
+              id="password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -108,7 +110,8 @@ export default function Login() {
               placeholder="Enter your password"
             />
           </div>
-          <form className="mt-4" align="center"></form>
+
+          <div className="mt-4 text-center">
             <button
               type="button"
               onClick={() => navigate('/forgot-password')}
@@ -116,11 +119,12 @@ export default function Login() {
             >
               Forgot Password?
             </button>
-          
+          </div>
+
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-secondary text-white font-semibold py-2 rounded-lg bg-color-green-500 bg-green-600 transition duration-200 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-green-600 text-white font-semibold py-2 rounded-lg transition duration-200 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Logging in...' : 'Login'}
           </button>
@@ -128,12 +132,11 @@ export default function Login() {
 
         <p className="text-center text-gray-600 mt-4">
           Don't have an account?{' '}
-          <a href="/register" className="text-secondary font-semibold hover:underline">
+          <Link to="/register" className="text-secondary font-semibold hover:underline">
             Register
-          </a>
+          </Link>
         </p>
 
-        {/* Google Sign-In button */}
         <div id="google-signin" className="mb-4 flex justify-center"></div>
         
       </div>
