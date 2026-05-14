@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { investmentAPI } from '../services/api';
 
 export default function Investments() {
@@ -17,8 +17,8 @@ export default function Investments() {
       try {
         const res = await investmentAPI.getPortfolio();
         setPortfolio(res.data);
-      } catch (err) {
-        setError('Failed to load portfolio');
+      } catch (error) {
+        setError(error.response?.data?.message || 'Failed to load portfolio');
       } finally {
         setLoading(false);
       }
@@ -43,11 +43,11 @@ export default function Investments() {
     try {
       await investmentAPI.buyInvestment({
         symbol: investmentForm.symbol,
-        shares: parseInt(investmentForm.shares),
+        shares: Number.parseInt(investmentForm.shares, 10),
       });
       setMessage('Investment purchased successfully!');
       setInvestmentForm({ symbol: '', shares: '' });
-      // Refresh portfolio
+
       const res = await investmentAPI.getPortfolio();
       setPortfolio(res.data);
     } catch (err) {
@@ -92,7 +92,7 @@ export default function Investments() {
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Buy Investment Form */}
+
           <div className="lg:col-span-1">
             <div className="bg-white rounded-lg shadow p-6">
               <h2 className="text-xl font-bold text-primary mb-6">Buy Investment</h2>
@@ -124,7 +124,7 @@ export default function Investments() {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="w-full bg-blue-600 text-white font-semibold py-2 rounded-lg hover:bg-blue-700 transition disabled:bg-gray-400"
+                  className="w-full bg-orange-500 text-white font-semibold py-2 rounded-lg hover:bg-orange-600 transition disabled:bg-gray-400"
                 >
                   {submitting ? 'Purchasing...' : 'Buy'}
                 </button>
@@ -132,7 +132,6 @@ export default function Investments() {
             </div>
           </div>
 
-          {/* Portfolio */}
           <div className="lg:col-span-2">
             <div className="bg-white rounded-lg shadow p-6">
               <h2 className="text-xl font-bold text-primary mb-6">Your Holdings</h2>
