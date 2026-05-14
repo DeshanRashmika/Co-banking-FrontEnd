@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { transactionAPI, accountAPI } from '../services/api';
 
 export default function Transactions() {
@@ -16,8 +16,8 @@ export default function Transactions() {
         if (res.data.length > 0) {
           setSelectedAccountId(res.data[0].id);
         }
-      } catch (err) {
-        setError('Failed to load accounts');
+      } catch (error) {
+        setError(error.response?.data?.message || 'Failed to load accounts');
       }
     };
     fetchAccounts();
@@ -27,18 +27,66 @@ export default function Transactions() {
     if (!selectedAccountId) return;
 
     const fetchTransactions = async () => {
+      setError('');
       setLoading(true);
       try {
         const res = await transactionAPI.getTransactionHistory(selectedAccountId);
         setTransactions(res.data);
-      } catch (err) {
-        setError('Failed to load transactions');
+      } catch (error) {
+        setError(error.response?.data?.message || 'Failed to load transactions');
       } finally {
         setLoading(false);
       }
     };
     fetchTransactions();
   }, [selectedAccountId]);
+
+  let transactionsContent;
+
+  if (loading) {
+    transactionsContent = <div className="p-6 text-center">Loading transactions...</div>;
+  } else if (transactions.length > 0) {
+    transactionsContent = (
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead className="bg-gray-100">
+            <tr>
+              <th className="px-6 py-3 text-left font-semibold text-gray-800">Date</th>
+              <th className="px-6 py-3 text-left font-semibold text-gray-800">Description</th>
+              <th className="px-6 py-3 text-left font-semibold text-gray-800">Type</th>
+              <th className="px-6 py-3 text-right font-semibold text-gray-800">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            {transactions.map((transaction) => (
+              <tr key={transaction.id} className="border-t hover:bg-gray-50">
+                <td className="px-6 py-4 text-gray-800">
+                  {new Date(transaction.date).toLocaleDateString()}
+                </td>
+                <td className="px-6 py-4 text-gray-600">{transaction.description}</td>
+                <td className="px-6 py-4">
+                  <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                    transaction.type === 'credit'
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-red-100 text-red-800'
+                  }`}>
+                    {transaction.type}
+                  </span>
+                </td>
+                <td className={`px-6 py-4 text-right font-semibold ${
+                  transaction.type === 'credit' ? 'text-green-600' : 'text-red-600'
+                }`}>
+                  {transaction.type === 'credit' ? '+' : '-'}${transaction.amount?.toFixed(2)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  } else {
+    transactionsContent = <div className="p-6 text-center text-gray-600">No transactions found</div>;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -56,8 +104,9 @@ export default function Transactions() {
         )}
 
         <div className="mb-6">
-          <label className="block text-gray-700 font-semibold mb-2">Select Account</label>
+          <label htmlFor="account-select" className="block text-gray-700 font-semibold mb-2">Select Account</label>
           <select
+            id="account-select"
             value={selectedAccountId}
             onChange={(e) => setSelectedAccountId(e.target.value)}
             className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-secondary"
@@ -71,48 +120,7 @@ export default function Transactions() {
         </div>
 
         <div className="bg-white rounded-lg shadow overflow-hidden">
-          {loading ? (
-            <div className="p-6 text-center">Loading transactions...</div>
-          ) : transactions.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-100">
-                  <tr>
-                    <th className="px-6 py-3 text-left font-semibold text-gray-800">Date</th>
-                    <th className="px-6 py-3 text-left font-semibold text-gray-800">Description</th>
-                    <th className="px-6 py-3 text-left font-semibold text-gray-800">Type</th>
-                    <th className="px-6 py-3 text-right font-semibold text-gray-800">Amount</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {transactions.map((transaction) => (
-                    <tr key={transaction.id} className="border-t hover:bg-gray-50">
-                      <td className="px-6 py-4 text-gray-800">
-                        {new Date(transaction.date).toLocaleDateString()}
-                      </td>
-                      <td className="px-6 py-4 text-gray-600">{transaction.description}</td>
-                      <td className="px-6 py-4">
-                        <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                          transaction.type === 'credit'
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-red-100 text-red-800'
-                        }`}>
-                          {transaction.type}
-                        </span>
-                      </td>
-                      <td className={`px-6 py-4 text-right font-semibold ${
-                        transaction.type === 'credit' ? 'text-green-600' : 'text-red-600'
-                      }`}>
-                        {transaction.type === 'credit' ? '+' : '-'}${transaction.amount?.toFixed(2)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <div className="p-6 text-center text-gray-600">No transactions found</div>
-          )}
+          {transactionsContent}
         </div>
       </main>
     </div>

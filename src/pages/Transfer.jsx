@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { accountAPI, transactionAPI } from '../services/api';
 
 export default function Transfer() {
@@ -18,8 +18,8 @@ export default function Transfer() {
       try {
         const res = await accountAPI.getAccounts();
         setAccounts(res.data);
-      } catch (err) {
-        setError('Failed to load accounts');
+      } catch (error) {
+        setError(error.response?.data?.message || 'Failed to load accounts');
       }
     };
     fetchAccounts();
@@ -42,7 +42,7 @@ export default function Transfer() {
     try {
       await transactionAPI.transfer({
         ...formData,
-        amount: parseFloat(formData.amount),
+        amount: Number.parseFloat(formData.amount),
       });
       setMessage('Transfer successful!');
       setFormData({
