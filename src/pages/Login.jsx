@@ -62,7 +62,7 @@ export default function Login() {
 
         googleAccounts.renderButton(
           document.getElementById('google-signin'),
-          { theme: 'outline', size: 'large' }
+          { theme: 'outline', size: 'large', width: '100%' }
         );
       }
     };
@@ -75,70 +75,96 @@ export default function Login() {
   }, [navigate, setSession]);
 
   return (
-    <div className="min-h-screen bg-linear-to-br bg-amber-40 flex items-center justify-center px-4 py-10">
-      <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md">
-        <img src="/src/assets/home.png" alt="Co Banking" className="mb-6 w-full rounded-lg" />
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-              {error}
+    <div className="min-h-screen bg-white flex flex-col md:flex-row">
+      {/* Left Side: Illustration/Hero */}
+      <div className="hidden md:flex md:w-1/2 bg-[#F5F5F5] items-center justify-center p-12">
+        <div className="max-w-md w-full">
+          <img src="/src/assets/home2.png" alt="Banking" className="w-full h-auto mb-8 grayscale hover:grayscale-0 transition-all duration-700" />
+          <h2 className="text-4xl font-bold tracking-tighter mb-4">Secure, Simple, and Modern Banking.</h2>
+          <p className="text-gray-500 text-lg">Experience the next generation of financial management with SecureBank.</p>
+        </div>
+      </div>
+
+      {/* Right Side: Form */}
+      <div className="w-full md:w-1/2 flex items-center justify-center p-8">
+        <div className="max-w-md w-full">
+          <div className="flex items-center gap-2 mb-6">
+            <img src="/src/assets/icon.png" alt="SecureBank" className="h-10 w-10 object-contain" />
+            <span className="text-2xl font-bold tracking-tight">SecureBank</span>
+          </div>
+
+          <h1 className="text-3xl font-bold mb-2">Welcome Back</h1>
+          <p className="text-gray-500 mb-8">Please enter your details to sign in.</p>
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {error && (
+              <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded text-sm">
+                {error}
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <label htmlFor="email" className="text-sm font-bold uppercase tracking-wider text-gray-500">Email Address</label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-black transition-colors"
+                placeholder="name@example.com"
+              />
             </div>
-          )}
 
-          <div>
-            <label htmlFor="email" className="block text-gray-700 font-semibold mb-2">Email</label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-secondary"
-              placeholder="Enter your email"
-            />
-          </div>
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <label htmlFor="password" className="text-sm font-bold uppercase tracking-wider text-gray-500">Password</label>
+                <button
+                  type="button"
+                  onClick={() => navigate('/forgot-password')}
+                  className="text-xs font-bold hover:underline"
+                >
+                  Forgot Password?
+                </button>
+              </div>
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-black transition-colors"
+                placeholder="••••••••"
+              />
+            </div>
 
-          <div>
-            <label htmlFor="password" className="block text-gray-700 font-semibold mb-2">Password</label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-secondary"
-              placeholder="Enter your password"
-            />
-          </div>
-
-          <div className="mt-4 text-center">
             <button
-              type="button"
-              onClick={() => navigate('/forgot-password')}
-              className="text-sm text-gray-600 hover:underline"
+              type="submit"
+              disabled={loading}
+              className="w-full bg-black text-white font-bold py-4 rounded-xl transition duration-200 hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Forgot Password?
+              {loading ? 'Signing in...' : 'Sign In'}
             </button>
-          </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-green-600 text-white font-semibold py-2 rounded-lg transition duration-200 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? 'Logging in...' : 'Login'}
-          </button>
-        </form>
+            <div className="relative my-8">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-200"></div>
+              </div>
+              <div className="relative flex justify-center text-sm uppercase">
+                <span className="bg-white px-4 text-gray-500 font-medium">Or continue with</span>
+              </div>
+            </div>
 
-        <p className="text-center text-gray-600 mt-4">
-          Don't have an account?{' '}
-          <Link to="/register" className="text-secondary font-semibold hover:underline">
-            Register
-          </Link>
-        </p>
+            <div id="google-signin" className="flex justify-center"></div>
+          </form>
 
-        <div id="google-signin" className="mb-4 flex justify-center"></div>
-        
+          <p className="text-center text-gray-500 mt-10">
+            Don't have an account?{' '}
+            <Link to="/register" className="text-black font-bold hover:underline">
+              Create an account
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );
