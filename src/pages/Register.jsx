@@ -1,6 +1,8 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import icon from '../assets/icon.png';
+import hero from '../assets/hero.png';
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -45,101 +47,116 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen from-blue-500 to-purple-600 flex items-center justify-center">
-      <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md">
-        <img src="/src/assets/home.png" alt="" width={100}/>
-        <h1 className="text-3xl font-bold text-shadow-sky-700 mb-6 text-center">
-          Create Account
-        </h1>
+    <div className="min-h-screen bg-white flex flex-col md:flex-row-reverse">
+      {/* Right Side: Illustration/Hero (Mirror of Login) */}
+      <div className="hidden md:flex md:w-1/2 bg-[#F9F9F9] items-center justify-center p-12">
+        <div className="max-w-md w-full text-right">
+          <img src={hero} alt="Banking" className="w-full h-auto mb-8 grayscale hover:grayscale-0 transition-all duration-700" />
+          <h2 className="text-4xl font-bold tracking-tighter mb-4">Join SecureBank Today.</h2>
+          <p className="text-gray-500 text-lg">Start your journey towards smarter and more secure financial freedom.</p>
+        </div>
+      </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-              {error}
+      {/* Left Side: Form */}
+      <div className="w-full md:w-1/2 flex items-center justify-center p-8">
+        <div className="max-w-md w-full">
+          <div className="flex items-center gap-2 mb-12">
+            <img src={icon} alt="SecureBank" className="h-10 w-10 object-contain" />
+            <span className="text-2xl font-bold tracking-tight">SecureBank</span>
+          </div>
+
+          <h1 className="text-3xl font-bold mb-2">Create Account</h1>
+          <p className="text-gray-500 mb-8">Join thousands of users managing their finances with ease.</p>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {error && (
+              <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded text-sm mb-4">
+                {error}
+              </div>
+            )}
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-bold uppercase tracking-wider text-gray-500">First Name</label>
+                <input
+                  type="text"
+                  name="firstName"
+                  value={formData.firstName}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-black transition-colors"
+                  placeholder="John"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-bold uppercase tracking-wider text-gray-500">Last Name</label>
+                <input
+                  type="text"
+                  name="lastName"
+                  value={formData.lastName}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-black transition-colors"
+                  placeholder="Doe"
+                />
+              </div>
             </div>
-          )}
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-gray-700 font-semibold mb-2">First Name</label>
+            <div className="space-y-2">
+              <label className="text-sm font-bold uppercase tracking-wider text-gray-500">Email Address</label>
               <input
-                type="text"
-                name="firstName"
-                value={formData.firstName}
+                type="email"
+                name="email"
+                value={formData.email}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-secondary"
-                placeholder="First name"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-black transition-colors"
+                placeholder="john@example.com"
               />
             </div>
-            <div>
-              <label className="block text-gray-700 font-semibold mb-2">Last Name</label>
+
+            <div className="space-y-2">
+              <label className="text-sm font-bold uppercase tracking-wider text-gray-500">Password</label>
               <input
-                type="text"
-                name="lastName"
-                value={formData.lastName}
+                type="password"
+                name="password"
+                value={formData.password}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-secondary"
-                placeholder="Last name"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-black transition-colors"
+                placeholder="••••••••"
               />
             </div>
-          </div>
 
-          <div>
-            <label className="block text-gray-700 font-semibold mb-2">Email</label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-secondary"
-              placeholder="Enter your email"
-            />
-          </div>
+            <div className="space-y-2">
+              <label className="text-sm font-bold uppercase tracking-wider text-gray-500">Confirm Password</label>
+              <input
+                type="password"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                required
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-black transition-colors"
+                placeholder="••••••••"
+              />
+            </div>
 
-          <div>
-            <label className="block text-gray-700 font-semibold mb-2">Password</label>
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-secondary"
-              placeholder="Create a password"
-            />
-          </div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-black text-white font-bold py-4 rounded-xl mt-4 transition duration-200 hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? 'Creating Account...' : 'Create Account'}
+            </button>
+          </form>
 
-          <div>
-            <label className="block text-gray-700 font-semibold mb-2">Confirm Password</label>
-            <input
-              type="password"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-secondary"
-              placeholder="Confirm password"
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-secondary text-white font-semibold py-2 rounded-lg bg-green-600 transition hover:bg-green-700 disabled:bg-gray-400"
-          >
-            {loading ? 'Creating Account...' : 'Register'}
-          </button>
-        </form>
-
-        <p className="text-center text-gray-600 mt-4">
-          Already have an account?{' '}
-          <a href="/login" className="text-secondary font-semibold hover:underline">
-            Login
-          </a>
-        </p>
+          <p className="text-center text-gray-500 mt-8">
+            Already have an account?{' '}
+            <Link to="/login" className="text-black font-bold hover:underline">
+              Sign in
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );
