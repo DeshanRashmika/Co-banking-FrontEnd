@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { authAPI } from '../services/api';
+import { motion } from 'framer-motion';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -75,7 +76,13 @@ export default function Login() {
   }, [navigate, setSession]);
 
   return (
-    <div className="min-h-screen bg-white flex flex-col md:flex-row">
+    <motion.div 
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: 20 }}
+      transition={{ duration: 0.5, ease: "easeInOut" }}
+      className="min-h-screen bg-white flex flex-col md:flex-row"
+    >
       {/* Left Side: Illustration/Hero */}
       <div className="hidden md:flex md:w-1/2 bg-[#F5F5F5] items-center justify-center p-12">
         <div className="max-w-md w-full">
@@ -166,6 +173,6 @@ export default function Login() {
           </p>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
