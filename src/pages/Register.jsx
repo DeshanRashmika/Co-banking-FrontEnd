@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { motion } from 'framer-motion';
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -45,7 +46,13 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col md:flex-row-reverse">
+    <motion.div 
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -20 }}
+      transition={{ duration: 0.5, ease: "easeInOut" }}
+      className="min-h-screen bg-white flex flex-col md:flex-row-reverse"
+    >
       {/* Right Side: Illustration/Hero (Mirror of Login) */}
       <div className="hidden md:flex md:w-1/2 bg-[#F5F5F5] items-center justify-center p-12">
         <div className="max-w-md w-full text-right">
@@ -156,6 +163,6 @@ export default function Register() {
           </p>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
