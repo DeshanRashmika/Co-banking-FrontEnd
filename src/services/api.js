@@ -31,6 +31,13 @@ export const accountAPI = {
   getAccounts: () => api.get('/accounts'),
   getAccountDetails: (accountId) => api.get(`/accounts/${accountId}`),
   getBalance: (accountId) => api.get(`/accounts/${accountId}/balance`),
+  topUp: (topUpData) => api.post('/accounts/top-up', topUpData),
+};
+
+export const paymentMethodAPI = {
+  getPaymentMethods: () => api.get('/payment-methods'),
+  addPaymentMethod: (methodData) => api.post('/payment-methods', methodData),
+  deletePaymentMethod: (methodId) => api.delete(`/payment-methods/${methodId}`),
 };
 
 export const transactionAPI = {
