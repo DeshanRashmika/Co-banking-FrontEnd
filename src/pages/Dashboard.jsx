@@ -5,6 +5,7 @@ import { useAuth } from '../hooks/useAuth';
 import { FiPlus, FiArrowUpRight, FiArrowDownLeft, FiCreditCard, FiPieChart, FiSettings, FiBell, FiX } from 'react-icons/fi';
 import { FaCcVisa, FaPaypal, FaCcMastercard } from 'react-icons/fa';
 import homeAsset from '../assets/home.png';
+import { motion } from 'framer-motion';
 
 const PAYMENT_METHODS = [
   { id: 'visa', name: 'Visa •••• 4242', icon: <FaCcVisa /> },
@@ -106,7 +107,13 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F9F9F9] text-black pb-12">
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.5 }}
+      className="min-h-screen bg-[#F9F9F9] text-black pb-12"
+    >
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
         {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
@@ -329,6 +336,6 @@ export default function Dashboard() {
           </div>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }
