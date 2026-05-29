@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { billPayAPI, paymentMethodAPI } from '../services/api';
+import { billPayAPI } from '../services/api';
 import { FiCalendar, FiCheckCircle, FiCreditCard, FiDollarSign, FiZap } from 'react-icons/fi';
 import { FaCcVisa, FaPaypal, FaCcMastercard } from 'react-icons/fa';
 

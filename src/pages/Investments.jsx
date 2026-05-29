@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { investmentAPI } from '../services/api';
-import { FiTrendingUp, FiTrendingDown, FiPieChart, FiShoppingBag, FiArrowUpRight, FiSearch } from 'react-icons/fi';
+import { FiTrendingUp, FiPieChart, FiShoppingBag, FiArrowUpRight, FiSearch } from 'react-icons/fi';
 
 export default function Investments() {
   const [portfolio, setPortfolio] = useState(null);
