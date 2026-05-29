@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { investmentAPI } from '../services/api';
 import { FiTrendingUp, FiPieChart, FiShoppingBag, FiArrowUpRight, FiSearch } from 'react-icons/fi';
+import InvestmentsChart from '../components/InvestmentsChart';
 
 export default function Investments() {
   const [portfolio, setPortfolio] = useState(null);
@@ -186,6 +187,13 @@ export default function Investments() {
                   </tbody>
                 </table>
               </div>
+            </div>
+            
+            <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-gray-50">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold">Portfolio Distribution</h3>
+              </div>
+              <InvestmentsChart holdings={portfolio?.holdings || []} />
             </div>
           </div>
 
