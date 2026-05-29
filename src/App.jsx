@@ -1,6 +1,7 @@
 
 import 'react'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
+import { AnimatePresence } from 'framer-motion'
 import { AuthProvider } from './context/AuthContext.jsx'
 import PrivateRoute from './components/PrivateRoute'
 import Navbar from './components/Navbar'
@@ -14,84 +15,94 @@ import Transactions from './pages/Transactions'
 import Bills from './pages/Bills'
 import Investments from './pages/Investments'
 
+function AnimatedRoutes() {
+  const location = useLocation();
+  
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        
+        <Route
+          path="/"
+          element={
+            <PrivateRoute>
+              <Navbar />
+              <Navigate to="/dashboard" />
+            </PrivateRoute>
+          }
+        />
+        
+        <Route
+          path="/dashboard"
+          element={
+            <PrivateRoute>
+              <>
+                <Navbar />
+                <Dashboard />
+              </>
+            </PrivateRoute>
+          }
+        />
+        
+        <Route
+          path="/transfer"
+          element={
+            <PrivateRoute>
+              <>
+                <Navbar />
+                <Transfer />
+              </>
+            </PrivateRoute>
+          }
+        />
+        
+        <Route
+          path="/transactions"
+          element={
+            <PrivateRoute>
+              <>
+                <Navbar />
+                <Transactions />
+              </>
+            </PrivateRoute>
+          }
+        />
+        
+        <Route
+          path="/bills"
+          element={
+            <PrivateRoute>
+              <>
+                <Navbar />
+                <Bills />
+              </>
+            </PrivateRoute>
+          }
+        />
+        
+        <Route
+          path="/investments"
+          element={
+            <PrivateRoute>
+              <>
+                <Navbar />
+                <Investments />
+              </>
+            </PrivateRoute>
+          }
+        />
+      </Routes>
+    </AnimatePresence>
+  );
+}
+
 export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          
-          <Route
-            path="/"
-            element={
-              <PrivateRoute>
-                <Navbar />
-                <Navigate to="/dashboard" />
-              </PrivateRoute>
-            }
-          />
-          
-          <Route
-            path="/dashboard"
-            element={
-              <PrivateRoute>
-                <>
-                  <Navbar />
-                  <Dashboard />
-                </>
-              </PrivateRoute>
-            }
-          />
-          
-          <Route
-            path="/transfer"
-            element={
-              <PrivateRoute>
-                <>
-                  <Navbar />
-                  <Transfer />
-                </>
-              </PrivateRoute>
-            }
-          />
-          
-          <Route
-            path="/transactions"
-            element={
-              <PrivateRoute>
-                <>
-                  <Navbar />
-                  <Transactions />
-                </>
-              </PrivateRoute>
-            }
-          />
-          
-          <Route
-            path="/bills"
-            element={
-              <PrivateRoute>
-                <>
-                  <Navbar />
-                  <Bills />
-                </>
-              </PrivateRoute>
-            }
-          />
-          
-          <Route
-            path="/investments"
-            element={
-              <PrivateRoute>
-                <>
-                  <Navbar />
-                  <Investments />
-                </>
-              </PrivateRoute>
-            }
-          />
-        </Routes>
+        <AnimatedRoutes />
       </AuthProvider>
     </BrowserRouter>
   )
