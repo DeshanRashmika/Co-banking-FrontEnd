@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { transactionAPI, accountAPI } from '../services/api';
 import { FiArrowUpRight, FiArrowDownLeft, FiFilter, FiDownload, FiSearch } from 'react-icons/fi';
 
@@ -6,6 +6,8 @@ export default function Transactions() {
   const [accounts, setAccounts] = useState([]);
   const [selectedAccountId, setSelectedAccountId] = useState('');
   const [transactions, setTransactions] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [visibleCount, setVisibleCount] = useState(20);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -42,6 +44,42 @@ export default function Transactions() {
     };
     fetchTransactions();
   }, [selectedAccountId]);
+
+  const filteredTransactions = useMemo(() => {
+    if (!searchQuery) return transactions;
+    const q = searchQuery.toString().toLowerCase().trim();
+    return transactions.filter((t) => {
+      const desc = (t.description || '').toString().toLowerCase();
+      const cat = (t.category || '').toString().toLowerCase();
+      const amt = (t.amount || '').toString().toLowerCase();
+      return desc.includes(q) || cat.includes(q) || amt.includes(q);
+    });
+  }, [transactions, searchQuery]);
+
+  const handleExportCSV = () => {
+    const items = filteredTransactions.slice(0, visibleCount);
+    if (!items || items.length === 0) return;
+
+    const headers = ['Date', 'Description', 'Category', 'Type', 'Amount'];
+    const rows = items.map((t) => [
+      new Date(t.date).toISOString(),
+      (t.description || '').replace(/"/g, '""'),
+      t.category || '',
+      t.type || '',
+      (t.amount || 0).toFixed(2),
+    ]);
+
+    const csv = [headers, ...rows].map((r) => r.map((c) => `"${c}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `transactions_${selectedAccountId || 'all'}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  };
 
   if (loading && accounts.length === 0) {
     return (
@@ -105,13 +143,15 @@ export default function Transactions() {
               <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search by description or amount..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search by description, category or amount..."
                 className="w-full pl-12 pr-4 py-3 bg-gray-50 border-none rounded-2xl text-sm focus:ring-1 focus:ring-black"
               />
             </div>
           </div>
 
-          <div className="overflow-x-auto">
+            <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="text-left text-gray-400 text-xs font-bold uppercase tracking-widest border-b border-gray-50">
@@ -128,8 +168,8 @@ export default function Transactions() {
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black mx-auto"></div>
                     </td>
                   </tr>
-                ) : transactions.length > 0 ? (
-                  transactions.map((transaction) => (
+                ) : filteredTransactions.length > 0 ? (
+                  filteredTransactions.slice(0, visibleCount).map((transaction) => (
                     <tr key={transaction.id} className="group hover:bg-gray-50 transition-colors">
                       <td className="px-8 py-6 text-sm font-medium text-gray-500">
                         {new Date(transaction.date).toLocaleDateString('en-US', {
@@ -181,9 +221,23 @@ export default function Transactions() {
           </div>
           
           <div className="p-8 border-t border-gray-50 flex items-center justify-center">
-            <button className="text-sm font-bold text-gray-400 hover:text-black transition-colors">
-              Load more transactions
-            </button>
+            <div className="flex items-center gap-4">
+              <button
+                onClick={handleExportCSV}
+                disabled={transactions.length === 0}
+                className="flex items-center gap-2 px-6 py-3 bg-white border border-gray-200 rounded-2xl font-bold hover:bg-gray-50 transition-colors shadow-sm"
+              >
+                <FiDownload /> Export CSV
+              </button>
+
+              <button
+                onClick={() => setVisibleCount((c) => c + 20)}
+                disabled={visibleCount >= filteredTransactions.length}
+                className="text-sm font-bold text-gray-400 hover:text-black transition-colors disabled:opacity-50"
+              >
+                Load more transactions
+              </button>
+            </div>
           </div>
         </div>
       </main>
