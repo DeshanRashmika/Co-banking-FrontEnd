@@ -134,6 +134,21 @@ The app uses JWT tokens for authentication:
 4. Token is included in all API requests via Authorization header
 5. Protected routes check for user session
 
+## Authentication Setup
+
+- **Env vars**: copy `.env.example` to `.env` and set the following:
+	- `VITE_API_URL` — your backend API base URL (e.g. `http://localhost:8080`)
+	- `VITE_GOOGLE_CLIENT_ID` — Google OAuth client ID for One Tap / Sign-In
+
+- **Google OAuth (frontend)**: the app uses Google Identity Services. Create an OAuth 2.0 Client ID in Google Cloud Console and set the **Authorized JavaScript origins** to your dev origin (e.g. `http://localhost:5173`). Use the generated client ID as `VITE_GOOGLE_CLIENT_ID`.
+
+- **Backend**: the frontend sends Google ID tokens to the backend endpoint `POST /auth/google`. The backend must verify the ID token, exchange or create a user record, and return a JWT `{ token, user }` for the frontend to store.
+
+- **Quick test**:
+	1. Install dependencies: `npm install`
+ 2. Start dev server: `npm run dev`
+	3. Visit `http://localhost:5173/login` and use email/password or the Google sign-in button.
+
 ## Styling
 
 The app uses Tailwind CSS with custom color theme:
