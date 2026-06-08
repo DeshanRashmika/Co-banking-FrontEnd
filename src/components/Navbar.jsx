@@ -1,15 +1,11 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import usePeriod from '../hooks/usePeriod';
 import icon from '../assets/icon.png';
+import { FiSettings, FiBell} from 'react-icons/fi';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const { period } = usePeriod({ timeZone: user?.timezone });
-
-  const displayName = user?.name || user?.firstName || (user?.email && user.email.split('@')[0]) || 'User';
-
   const handleLogout = async () => {
     await logout();
     navigate('/login');
@@ -25,8 +21,7 @@ export default function Navbar() {
           </Link>
 
           {user && (
-            <div className="hidden md:flex items-center gap-8">
-              <div className="text-sm text-gray-700">{`Good ${period}, ${displayName}`}</div>
+            <div className="flex items-center gap-6">
               <Link to="/dashboard" className="text-sm font-medium text-gray-600 hover:text-black transition-colors">
                 Dashboard
               </Link>
@@ -48,7 +43,19 @@ export default function Navbar() {
               >
                 Logout
               </button>
+          <div className="flex items-right gap-3">
+            <button className="p-2 bg-white border border-gray-200 rounded-full hover:bg-gray-50 transition-colors" aria-label="Notifications">
+              <FiBell className="w-5 h-5" />
+            </button>
+            <button className="p-2 bg-white border border-gray-200 rounded-full hover:bg-gray-50 transition-colors" aria-label="Settings">
+              <FiSettings className="w-5 h-5" />
+            </button>
+            <div className="h-10 w-10 bg-black rounded-full flex items-center justify-center text-white font-bold select-none">
+              {user?.firstName?.[0] || 'U'}
             </div>
+          </div>
+            </div>
+            
           )}
         </div>
       </div>

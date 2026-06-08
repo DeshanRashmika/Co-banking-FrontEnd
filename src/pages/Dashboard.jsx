@@ -2,10 +2,11 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { accountAPI, notificationAPI } from '../services/api';
 import { useAuth } from '../hooks/useAuth';
-import { FiPlus, FiArrowUpRight, FiArrowDownLeft, FiCreditCard, FiPieChart, FiSettings, FiBell, FiX } from 'react-icons/fi';
 import { FaCcVisa, FaPaypal, FaCcMastercard } from 'react-icons/fa';
 import homeAsset from '../assets/home.png';
 import { motion } from 'framer-motion';
+import { FiPlus, FiArrowUpRight, FiArrowDownLeft, FiCreditCard, FiPieChart, FiX } from 'react-icons/fi';
+import usePeriod from '../hooks/usePeriod';
 
 const PAYMENT_METHODS = [
   { id: 'visa', name: 'Visa •••• 4242', icon: <FaCcVisa /> },
@@ -25,6 +26,7 @@ export default function Dashboard() {
   const [topUpAmount, setTopUpAmount] = useState('');
   const [selectedMethod, setSelectedMethod] = useState('visa');
   const [isProcessing, setIsProcessing] = useState(false);
+  const { period } = usePeriod({ timeZone: user?.timezone });
 
   const fetchData = useCallback(async () => {
     try {
@@ -117,24 +119,13 @@ export default function Dashboard() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
         {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
-          <div>
+
             <h1 className="text-3xl font-bold tracking-tight text-black">
-              Good morning, {user?.firstName || 'User'}
+              {`Good ${period}, `}{user?.firstName || 'User'}
+               
             </h1>
-            <p className="text-gray-500 mt-1">Here's what's happening with your accounts today.</p>
+           <p className="text-gray-400 mt-1">Here's what's happening with your accounts today.</p>
           </div>
-          <div className="flex items-center gap-3">
-            <button className="p-2 bg-white border border-gray-200 rounded-full hover:bg-gray-50 transition-colors" aria-label="Notifications">
-              <FiBell className="w-5 h-5" />
-            </button>
-            <button className="p-2 bg-white border border-gray-200 rounded-full hover:bg-gray-50 transition-colors" aria-label="Settings">
-              <FiSettings className="w-5 h-5" />
-            </button>
-            <div className="h-10 w-10 bg-black rounded-full flex items-center justify-center text-white font-bold select-none">
-              {user?.firstName?.[0] || 'U'}
-            </div>
-          </div>
-        </div>
 
         {error && (
           <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-8 rounded shadow-sm">
