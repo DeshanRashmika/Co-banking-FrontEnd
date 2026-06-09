@@ -20,74 +20,61 @@ export default function Dashboard() {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  
+
   // Top Up Modal State
   const [isTopUpOpen, setIsTopUpOpen] = useState(false);
   const [topUpAmount, setTopUpAmount] = useState('');
   const [selectedMethod, setSelectedMethod] = useState('visa');
+  const [selectedAccountId, setSelectedAccountId] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const { period } = usePeriod({ timeZone: user?.timezone });
 
   const fetchData = useCallback(async () => {
     try {
+      setLoading(true);
+      setError('');
       const [accountsRes, notificationsRes] = await Promise.all([
         accountAPI.getAccounts(),
         notificationAPI.getNotifications(),
       ]);
-      setAccounts(accountsRes?.data || []);
+      const fetchedAccounts = accountsRes?.data || [];
+      setAccounts(fetchedAccounts);
       setNotifications(notificationsRes?.data || []);
-      setError('');
+
+      if (fetchedAccounts.length > 0 && !selectedAccountId) {
+        setSelectedAccountId(fetchedAccounts[0].id);
+      }
     } catch (err) {
-      setError('Failed to load dashboard data. Please try again later.');
       console.error('Dashboard data fetch error:', err);
+      if (err.response?.status === 500) {
+        setError('Server Error: The banking service is temporarily unavailable. Please try again later.');
+      } else {
+        setError('Failed to load dashboard data. Please check your connection.');
+      }
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [selectedAccountId]);
 
   useEffect(() => {
-    let mounted = true;
-
-    const loadData = async () => {
-      try {
-        const [accountsRes, notificationsRes] = await Promise.all([
-          accountAPI.getAccounts(),
-          notificationAPI.getNotifications(),
-        ]);
-
-        if (!mounted) return;
-        setAccounts(accountsRes?.data || []);
-        setNotifications(notificationsRes?.data || []);
-      } catch (err) {
-        if (!mounted) return;
-        setError('Failed to load dashboard data');
-        console.error(err);
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    };
-
-    loadData();
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
+    fetchData();
+  }, []); 
 
   const handleTopUp = async (e) => {
     e.preventDefault();
-    if (!topUpAmount || accounts.length === 0) return;
-    
+    const targetAccountId = selectedAccountId || (accounts.length > 0 ? accounts[0].id : null);
+    if (!topUpAmount || !targetAccountId) return;
+
     setIsProcessing(true);
     try {
       await accountAPI.topUp({
-        accountId: accounts[0].id,
+        accountId: targetAccountId,
         amount: Number(topUpAmount),
         paymentMethod: selectedMethod
       });
       setIsTopUpOpen(false);
       setTopUpAmount('');
-      await fetchData(); // Refresh data using the stable callback
+      await fetchData(); 
     } catch (err) {
       console.error('Top up error:', err);
       alert('Top up failed. Please try again.');
@@ -95,10 +82,9 @@ export default function Dashboard() {
       setIsProcessing(false);
     }
   };
-
-  const totalBalance = useMemo(() => 
+  const totalBalance = useMemo(() =>
     accounts.reduce((sum, acc) => sum + (acc.balance || 0), 0)
-  , [accounts]);
+    , [accounts]);
 
   if (loading && accounts.length === 0) {
     return (
@@ -109,7 +95,7 @@ export default function Dashboard() {
   }
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -118,14 +104,32 @@ export default function Dashboard() {
     >
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
         {/* Header Section */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
-
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-4">
+          <div>
             <h1 className="text-3xl font-bold tracking-tight text-black">
               {`Good ${period}, `}{user?.firstName || 'User'}
-               
             </h1>
-           <p className="text-gray-400 mt-1">Here's what's happening with your accounts today.</p>
+            <p className="text-gray-500 mt-1">Here's what's happening with your accounts today.</p>
           </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={fetchData}
+              disabled={loading}
+              className="p-2.5 bg-white border border-gray-100 rounded-xl text-gray-400 hover:text-black hover:bg-gray-50 transition-all shadow-sm active:scale-95 disabled:opacity-50"
+              aria-label="Refresh data"
+            >
+              <svg className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            </button>
+            <button
+              onClick={() => setIsTopUpOpen(true)}
+              className="px-6 py-2.5 bg-black text-white rounded-xl font-bold text-sm hover:bg-gray-800 transition-all shadow-sm flex items-center gap-2 active:scale-95"
+            >
+              <FiPlus /> Add Funds
+            </button>
+          </div>
+        </div>
 
         {error && (
           <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-8 rounded shadow-sm">
@@ -134,28 +138,28 @@ export default function Dashboard() {
         )}
 
         {/* Top Grid: Balance and Account Cards */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-12">
           {/* Total Balance Card */}
-          <div className="bg-black text-white p-8 rounded-3xl shadow-xl flex flex-col justify-between relative overflow-hidden min-h-[220px]">
+          <div className="lg:col-span-4 bg-black text-white p-8 rounded-[2rem] shadow-xl flex flex-col justify-between relative overflow-hidden min-h-[240px]">
             <div className="relative z-10">
-              <p className="text-gray-400 font-medium">Total Balance</p>
+              <p className="text-gray-400 text-sm font-medium">Total Balance</p>
               <h2 className="text-5xl font-bold mt-2 tracking-tighter text-white">
                 ${totalBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </h2>
             </div>
-            <div className="flex gap-4 mt-8 relative z-10">
-              <Link 
-                to="/transfer" 
-                className="flex-1 bg-white text-black py-3 rounded-xl font-bold text-center hover:bg-gray-100 transition-colors flex items-center justify-center gap-2 text-sm shadow-sm"
+            <div className="flex gap-3 mt-8 relative z-10">
+              <Link
+                to="/transfer"
+                className="flex-1 bg-white text-black py-3.5 rounded-2xl font-bold text-center hover:bg-gray-100 active:scale-95 transition-all flex items-center justify-center gap-2 text-sm shadow-sm"
               >
-                <FiArrowUpRight /> Transfer
+                <FiArrowUpRight className="w-4 h-4" /> Transfer
               </Link>
-              <button 
+              <button
                 onClick={() => setIsTopUpOpen(true)}
                 disabled={accounts.length === 0}
-                className="flex-1 bg-gray-800 text-white py-3 rounded-xl font-bold text-center hover:bg-gray-700 transition-colors flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 bg-white/10 backdrop-blur-md text-white py-3.5 rounded-2xl font-bold text-center hover:bg-white/20 active:scale-95 transition-all flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <FiPlus /> Top Up
+                <FiPlus className="w-4 h-4" /> Top Up
               </button>
             </div>
             {/* Abstract decorative shape */}
@@ -163,32 +167,40 @@ export default function Dashboard() {
           </div>
 
           {/* Account Cards List */}
-          <div className="lg:col-span-2 flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
+          <div className="lg:col-span-8 flex gap-6 overflow-x-auto pb-4 scrollbar-hide">
             {accounts.length > 0 ? (
               accounts.map((account) => (
-                <div key={account.id} className="min-w-[300px] bg-white border border-gray-100 p-6 rounded-3xl shadow-sm hover:shadow-md transition-shadow cursor-default">
-                  <div className="flex justify-between items-start mb-8">
-                    <div className="p-3 bg-gray-50 rounded-2xl">
-                      <FiCreditCard className="w-6 h-6 text-black" />
+                <div key={account.id} className="min-w-[320px] bg-white border border-gray-100 p-8 rounded-[2rem] shadow-sm hover:shadow-md transition-all group cursor-default">
+                  <div className="flex justify-between items-start mb-10">
+                    <div className="p-4 bg-gray-50 rounded-2xl group-hover:bg-black group-hover:text-white transition-colors">
+                      <FiCreditCard className="w-6 h-6" />
                     </div>
-                    <span className="text-[10px] font-bold px-2 py-1 bg-black text-white rounded uppercase tracking-widest">
+                    <span className="text-[10px] font-bold px-3 py-1.5 bg-green-50 text-green-600 rounded-full uppercase tracking-wider">
                       Active
                     </span>
                   </div>
                   <div>
-                    <h3 className="text-gray-500 font-medium text-sm">{account.name}</h3>
-                    <p className="text-xl font-bold mt-1 text-black">${(account.balance || 0).toFixed(2)}</p>
-                    <p className="text-gray-400 text-xs mt-4 tracking-widest font-mono">
-                      •••• •••• •••• {account.accountNumber?.slice(-4) || '****'}
-                    </p>
+                    <h3 className="text-gray-400 font-medium text-sm">{account.name}</h3>
+                    <p className="text-2xl font-bold mt-1 text-black">${(account.balance || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
+                    <div className="flex justify-between items-center mt-6">
+                      <p className="text-gray-400 text-xs tracking-[0.2em] font-mono">
+                        •••• {account.accountNumber?.slice(-4) || '****'}
+                      </p>
+                      <div className="flex -space-x-2">
+                        <div className="w-6 h-6 rounded-full bg-red-500/80 border border-white"></div>
+                        <div className="w-6 h-6 rounded-full bg-orange-400/80 border border-white"></div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               ))
             ) : !loading && (
-              <div className="w-full bg-white border border-dashed border-gray-200 p-8 rounded-3xl flex flex-col items-center justify-center text-gray-400 gap-3">
-                <FiPlus className="w-8 h-8 opacity-20" />
-                <p className="font-medium text-black">No accounts found</p>
-                <button className="text-black font-bold text-sm hover:underline">Open your first account</button>
+              <div className="w-full bg-white border border-dashed border-gray-200 p-8 rounded-[2rem] flex flex-col items-center justify-center text-gray-400 gap-3">
+                <div className="p-4 bg-gray-50 rounded-full">
+                  <FiPlus className="w-8 h-8 opacity-20" />
+                </div>
+                <p className="font-bold text-black">No accounts found</p>
+                <button className="text-gray-400 font-medium text-sm hover:text-black transition-colors">Open your first account</button>
               </div>
             )}
           </div>
@@ -209,17 +221,24 @@ export default function Dashboard() {
                 notifications.slice(0, 5).map((n) => (
                   <div key={n.id} className="flex items-center justify-between pb-6 border-b border-gray-50 last:border-0 last:pb-0 group">
                     <div className="flex items-center gap-4">
-                      <div className="p-3 bg-gray-50 rounded-2xl text-black group-hover:bg-black group-hover:text-white transition-colors">
-                        {n.message.toLowerCase().includes('received') || n.message.toLowerCase().includes('top up') ? <FiArrowDownLeft /> : <FiArrowUpRight />}
+                      <div className={`p-3 rounded-2xl transition-colors ${
+                        n.message.toLowerCase().includes('received') || n.message.toLowerCase().includes('top up') 
+                        ? 'bg-green-50 text-green-600 group-hover:bg-green-600 group-hover:text-white' 
+                        : 'bg-gray-50 text-black group-hover:bg-black group-hover:text-white'
+                      }`}>
+                        {n.message.toLowerCase().includes('received') || n.message.toLowerCase().includes('top up') ? <FiArrowDownLeft className="w-5 h-5" /> : <FiArrowUpRight className="w-5 h-5" />}
                       </div>
                       <div>
-                        <p className="font-bold text-sm text-black">{n.message}</p>
-                        <p className="text-xs text-gray-400">{new Date(n.createdAt).toLocaleDateString()}</p>
+                        <p className="font-bold text-sm text-black leading-tight">{n.title || 'Transaction'}</p>
+                        <p className="text-xs text-gray-400 mt-0.5 line-clamp-1">{n.message}</p>
                       </div>
                     </div>
-                    <p className={`font-bold ${n.message.toLowerCase().includes('received') || n.message.toLowerCase().includes('top up') ? 'text-black' : 'text-gray-400'}`}>
-                      {n.message.toLowerCase().includes('received') || n.message.toLowerCase().includes('top up') ? '+' : '-'} $--.--
-                    </p>
+                    <div className="text-right">
+                      <p className={`font-bold text-sm ${n.message.toLowerCase().includes('received') || n.message.toLowerCase().includes('top up') ? 'text-green-600' : 'text-black'}`}>
+                        {n.message.toLowerCase().includes('received') || n.message.toLowerCase().includes('top up') ? '+' : '-'} $--.--
+                      </p>
+                      <p className="text-[10px] text-gray-300 uppercase font-bold tracking-tighter mt-0.5">{new Date(n.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</p>
+                    </div>
                   </div>
                 ))
               ) : (
@@ -251,15 +270,15 @@ export default function Dashboard() {
             <div className="bg-[#EFEFEF] rounded-3xl p-8 relative overflow-hidden group cursor-pointer hover:shadow-md transition-shadow">
               <div className="relative z-10">
                 <h3 className="text-xl font-bold mb-2 text-black">Home Loans</h3>
-                <p className="text-sm text-gray-500 mb-6 leading-relaxed">Rates as low as 3.5% APR.<br/>Apply in minutes.</p>
+                <p className="text-sm text-gray-500 mb-6 leading-relaxed">Rates as low as 3.5% APR.<br />Apply in minutes.</p>
                 <button className="bg-black text-white px-6 py-2 rounded-xl text-xs font-bold hover:bg-gray-800 transition-colors">
                   Learn more
                 </button>
               </div>
-              <img 
-                src={homeAsset} 
-                alt="Home" 
-                className="absolute -right-4 -bottom-4 w-32 h-32 object-contain opacity-20 grayscale group-hover:scale-110 group-hover:opacity-30 transition-all duration-500" 
+              <img
+                src={homeAsset}
+                alt="Home"
+                className="absolute -right-4 -bottom-4 w-32 h-32 object-contain opacity-20 grayscale group-hover:scale-110 group-hover:opacity-30 transition-all duration-500"
               />
             </div>
           </div>
@@ -296,6 +315,21 @@ export default function Dashboard() {
               </div>
 
               <div className="space-y-4">
+                <label className="text-xs font-bold uppercase tracking-widest text-gray-400 ml-1 block">Target Account</label>
+                <select
+                  value={selectedAccountId}
+                  onChange={(e) => setSelectedAccountId(e.target.value)}
+                  className="w-full p-4 bg-gray-50 border-none rounded-2xl font-bold text-black focus:ring-2 focus:ring-black outline-none transition-all appearance-none cursor-pointer"
+                >
+                  {accounts.map((acc) => (
+                    <option key={acc.id} value={acc.id}>
+                      {acc.name} (${acc.balance?.toFixed(2)})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-4">
                 <label className="text-xs font-bold uppercase tracking-widest text-gray-400 ml-1 block">Payment Method</label>
                 <div className="grid grid-cols-3 gap-3">
                   {PAYMENT_METHODS.map((method) => (
@@ -303,11 +337,10 @@ export default function Dashboard() {
                       key={method.id}
                       type="button"
                       onClick={() => setSelectedMethod(method.id)}
-                      className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${
-                        selectedMethod === method.id 
-                          ? 'border-black bg-black text-white' 
+                      className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${selectedMethod === method.id
+                          ? 'border-black bg-black text-white'
                           : 'border-gray-100 bg-white hover:border-gray-300'
-                      }`}
+                        }`}
                     >
                       <div className="text-xl">{method.icon}</div>
                       <span className="text-[10px] font-bold uppercase tracking-wider">{method.id}</span>
