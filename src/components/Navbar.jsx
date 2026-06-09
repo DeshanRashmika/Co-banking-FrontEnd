@@ -1,61 +1,154 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { useState, useRef, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import icon from '../assets/icon.png';
-import { FiSettings, FiBell} from 'react-icons/fi';
+import { FiSettings, FiBell, FiLogOut, FiUser, FiChevronDown } from 'react-icons/fi';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const profileRef = useRef(null);
+  const notificationsRef = useRef(null);
+
   const handleLogout = async () => {
     await logout();
     navigate('/login');
   };
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (profileRef.current && !profileRef.current.contains(event.target)) {
+        setIsProfileOpen(false);
+      }
+      if (notificationsRef.current && !notificationsRef.current.contains(event.target)) {
+        setIsNotificationsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const navLinks = [
+    { name: 'Dashboard', path: '/dashboard' },
+    { name: 'Transfer', path: '/transfer' },
+    { name: 'Bills', path: '/bills' },
+    { name: 'Investments', path: '/investments' },
+    { name: 'History', path: '/transactions' },
+  ];
+
   return (
-    <nav className="bg-white border-b border-gray-200">
+    <nav className="bg-white border-b border-gray-100 sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
-          <Link to="/dashboard" className="flex items-center gap-2">
-            <img src={icon} alt="SecureBank" className="h-8 w-8 object-contain" />
-            <span className="text-xl font-bold tracking-tight text-black">SecureBank</span>
-          </Link>
+          {/* Left Section: Logo and Links */}
+          <div className="flex items-center gap-8">
+            <Link to="/dashboard" className="flex items-center gap-2">
+              <img src={icon} alt="SecureBank" className="h-8 w-8 object-contain" />
+              <span className="text-xl font-bold tracking-tight text-black">SecureBank</span>
+            </Link>
 
-          {user && (
-            <div className="flex items-center gap-6">
-              <Link to="/dashboard" className="text-sm font-medium text-gray-600 hover:text-black transition-colors">
-                Dashboard
-              </Link>
-              <Link to="/transfer" className="text-sm font-medium text-gray-600 hover:text-black transition-colors">
-                Transfer
-              </Link>
-              <Link to="/bills" className="text-sm font-medium text-gray-600 hover:text-black transition-colors">
-                Bills
-              </Link>
-              <Link to="/investments" className="text-sm font-medium text-gray-600 hover:text-black transition-colors">
-                Investments
-              </Link>
-              <Link to="/transactions" className="text-sm font-medium text-gray-600 hover:text-black transition-colors">
-                History
-              </Link>
-              <button
-                onClick={handleLogout}
-                className="ml-4 px-4 py-1.5 text-sm font-medium text-white bg-black rounded-full hover:bg-gray-800 transition-colors"
-              >
-                Logout
-              </button>
-          <div className="flex items-right gap-3">
-            <button className="p-2 bg-white border border-gray-200 rounded-full hover:bg-gray-50 transition-colors" aria-label="Notifications">
-              <FiBell className="w-5 h-5" />
-            </button>
-            <button className="p-2 bg-white border border-gray-200 rounded-full hover:bg-gray-50 transition-colors" aria-label="Settings">
-              <FiSettings className="w-5 h-5" />
-            </button>
-            <div className="h-10 w-10 bg-black rounded-full flex items-center justify-center text-white font-bold select-none">
-              {user?.firstName?.[0] || 'U'}
-            </div>
+            {user && (
+              <div className="hidden md:flex items-center gap-1">
+                {navLinks.map((link) => (
+                  <Link
+                    key={link.path}
+                    to={link.path}
+                    className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${location.pathname === link.path
+                        ? 'text-black bg-gray-50'
+                        : 'text-gray-500 hover:text-black hover:bg-gray-50'
+                      }`}
+                  >
+                    {link.name}
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
+
+          {/* Right Section: Icons and Profile */}
+          {user && (
+            <div className="flex items-center gap-2">
+              {/* Notifications */}
+              <div className="relative" ref={notificationsRef}>
+                <button
+                  onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+                  className={`p-2 rounded-full transition-colors ${isNotificationsOpen ? 'bg-gray-100 text-black' : 'text-gray-500 hover:bg-gray-50 hover:text-black'
+                    }`}
+                  aria-label="Notifications"
+                >
+                  <FiBell className="w-5 h-5" />
+                  <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+                </button>
+
+                {isNotificationsOpen && (
+                  <div className="absolute right-0 mt-2 w-80 bg-white border border-gray-100 rounded-2xl shadow-xl py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="px-4 py-2 border-b border-gray-50">
+                      <h3 className="font-bold text-sm">Notifications</h3>
+                    </div>
+                    <div className="max-h-64 overflow-y-auto">
+                      <div className="px-4 py-4 text-center text-gray-400 text-sm">
+                        No new notifications
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Settings */}
+              <button
+                className="p-2 text-gray-500 hover:bg-gray-50 hover:text-black rounded-full transition-colors"
+                aria-label="Settings"
+                onClick={() => navigate('/dashboard')} // Placeholder
+              >
+                <FiSettings className="w-5 h-5" />
+              </button>
+
+              <div className="h-6 w-px bg-gray-100 mx-2"></div>
+
+              {/* Profile Dropdown */}
+              <div className="relative" ref={profileRef}>
+                <button
+                  onClick={() => setIsProfileOpen(!isProfileOpen)}
+                  className="flex items-center gap-2 p-1 pl-2 hover:bg-gray-50 rounded-full transition-colors"
+                >
+                  <div className="h-8 w-8 bg-black rounded-full flex items-center justify-center text-white text-xs font-bold ring-2 ring-white">
+                    {user?.firstName?.[0] || 'U'}
+                  </div>
+                  <FiChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isProfileOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {isProfileOpen && (
+                  <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-100 rounded-2xl shadow-xl py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="px-4 py-2 border-b border-gray-50 mb-1">
+                      <p className="text-sm font-bold text-black truncate">{user?.firstName} {user?.lastName}</p>
+                      <p className="text-xs text-gray-400 truncate">{user?.email}</p>
+                    </div>
+
+                    <button className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 hover:text-black transition-colors">
+                      <FiUser className="w-4 h-4" />
+                      Your Profile
+                    </button>
+                    <button className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 hover:text-black transition-colors">
+                      <FiSettings className="w-4 h-4" />
+                      Settings
+                    </button>
+
+                    <div className="h-px bg-gray-50 my-1"></div>
+
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                    >
+                      <FiLogOut className="w-4 h-4" />
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
-            
           )}
         </div>
       </div>
