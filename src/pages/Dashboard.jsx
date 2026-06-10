@@ -1,11 +1,11 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState,useEffect, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { accountAPI, notificationAPI } from '../services/api';
 import { useAuth } from '../hooks/useAuth';
 import { FaCcVisa, FaPaypal, FaCcMastercard } from 'react-icons/fa';
 import homeAsset from '../assets/home.png';
 import { motion } from 'framer-motion';
-import { FiPlus, FiArrowUpRight, FiArrowDownLeft, FiCreditCard, FiPieChart, FiX } from 'react-icons/fi';
+import { FiPlus, FiArrowUpRight, FiArrowDownLeft, FiCreditCard, FiPieChart, FiX, FiChevronDown } from 'react-icons/fi';
 import usePeriod from '../hooks/usePeriod';
 
 const PAYMENT_METHODS = [
@@ -20,13 +20,17 @@ export default function Dashboard() {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-
-  // Top Up Modal State
   const [isTopUpOpen, setIsTopUpOpen] = useState(false);
   const [topUpAmount, setTopUpAmount] = useState('');
   const [selectedMethod, setSelectedMethod] = useState('visa');
   const [selectedAccountId, setSelectedAccountId] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isOpenAccountOpen, setIsOpenAccountOpen] = useState(false);
+  const [newAccountData, setNewAccountData] = useState({
+    accountType: 'SAVINGS',
+    currency: 'USD'
+  });
+
   const { period } = usePeriod({ timeZone: user?.timezone });
 
   const fetchData = useCallback(async () => {
@@ -37,13 +41,8 @@ export default function Dashboard() {
         accountAPI.getAccounts(),
         notificationAPI.getNotifications(),
       ]);
-      const fetchedAccounts = accountsRes?.data || [];
-      setAccounts(fetchedAccounts);
+      setAccounts(accountsRes?.data || []);
       setNotifications(notificationsRes?.data || []);
-
-      if (fetchedAccounts.length > 0 && !selectedAccountId) {
-        setSelectedAccountId(fetchedAccounts[0].id);
-      }
     } catch (err) {
       console.error('Dashboard data fetch error:', err);
       if (err.response?.status === 500) {
@@ -54,22 +53,57 @@ export default function Dashboard() {
     } finally {
       setLoading(false);
     }
-  }, [selectedAccountId]);
+  }, []);
 
   useEffect(() => {
     fetchData();
-  }, []); 
+  }, [fetchData]);
+  
+  useEffect(() => {
+    if (accounts.length > 0 && !selectedAccountId) {
+      setSelectedAccountId(accounts[0].id);
+    }
+  }, [accounts, selectedAccountId]);
+
+  const handleOpenAccount = async (e) => {
+    e.preventDefault();
+    setIsProcessing(true);
+    try {
+      await accountAPI.createAccount({
+        accountType: newAccountData.accountType,
+        currency: newAccountData.currency
+      });
+      setIsOpenAccountOpen(false);
+      setNewAccountData({ accountType: 'SAVINGS', currency: 'USD' });
+      await fetchData();
+    } catch (err) {
+      console.error('Open account error:', err);
+      alert(err.response?.data?.message || 'Failed to open account. Please try again.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   const handleTopUp = async (e) => {
     e.preventDefault();
+    const amount = Number(topUpAmount);
     const targetAccountId = selectedAccountId || (accounts.length > 0 ? accounts[0].id : null);
-    if (!topUpAmount || !targetAccountId) return;
+
+    if (!amount || amount <= 0) {
+      alert('Please enter a valid amount.');
+      return;
+    }
+
+    if (!targetAccountId) {
+      alert('Please select a target account.');
+      return;
+    }
 
     setIsProcessing(true);
     try {
       await accountAPI.topUp({
         accountId: targetAccountId,
-        amount: Number(topUpAmount),
+        amount: amount,
         paymentMethod: selectedMethod
       });
       setIsTopUpOpen(false);
@@ -77,7 +111,8 @@ export default function Dashboard() {
       await fetchData(); 
     } catch (err) {
       console.error('Top up error:', err);
-      alert('Top up failed. Please try again.');
+      const errorMsg = err.response?.data?.message || 'Top up failed. Please try again.';
+      alert(errorMsg);
     } finally {
       setIsProcessing(false);
     }
@@ -124,7 +159,8 @@ export default function Dashboard() {
             </button>
             <button
               onClick={() => setIsTopUpOpen(true)}
-              className="px-6 py-2.5 bg-black text-white rounded-xl font-bold text-sm hover:bg-gray-800 transition-all shadow-sm flex items-center gap-2 active:scale-95"
+              disabled={loading || accounts.length === 0}
+              className="px-6 py-2.5 bg-black text-white rounded-xl font-bold text-sm hover:bg-gray-800 transition-all shadow-sm flex items-center gap-2 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <FiPlus /> Add Funds
             </button>
@@ -180,7 +216,9 @@ export default function Dashboard() {
                     </span>
                   </div>
                   <div>
-                    <h3 className="text-gray-400 font-medium text-sm">{account.name}</h3>
+                    <h3 className="text-gray-400 font-medium text-sm">
+                      {account.accountType === 'SAVINGS' ? 'Savings Account' : 'Checking Account'}
+                    </h3>
                     <p className="text-2xl font-bold mt-1 text-black">${(account.balance || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
                     <div className="flex justify-between items-center mt-6">
                       <p className="text-gray-400 text-xs tracking-[0.2em] font-mono">
@@ -200,7 +238,12 @@ export default function Dashboard() {
                   <FiPlus className="w-8 h-8 opacity-20" />
                 </div>
                 <p className="font-bold text-black">No accounts found</p>
-                <button className="text-gray-400 font-medium text-sm hover:text-black transition-colors">Open your first account</button>
+                <button 
+                  onClick={() => setIsOpenAccountOpen(true)}
+                  className="text-gray-400 font-medium text-sm hover:text-black transition-colors"
+                >
+                  Open your first account
+                </button>
               </div>
             )}
           </div>
@@ -316,17 +359,23 @@ export default function Dashboard() {
 
               <div className="space-y-4">
                 <label className="text-xs font-bold uppercase tracking-widest text-gray-400 ml-1 block">Target Account</label>
-                <select
-                  value={selectedAccountId}
-                  onChange={(e) => setSelectedAccountId(e.target.value)}
-                  className="w-full p-4 bg-gray-50 border-none rounded-2xl font-bold text-black focus:ring-2 focus:ring-black outline-none transition-all appearance-none cursor-pointer"
-                >
-                  {accounts.map((acc) => (
-                    <option key={acc.id} value={acc.id}>
-                      {acc.name} (${acc.balance?.toFixed(2)})
-                    </option>
-                  ))}
-                </select>
+                <div className="relative">
+                  <select
+                    value={selectedAccountId}
+                    onChange={(e) => setSelectedAccountId(e.target.value)}
+                    className="w-full p-4 pr-12 bg-gray-50 border-none rounded-2xl font-bold text-black focus:ring-2 focus:ring-black outline-none transition-all appearance-none cursor-pointer"
+                  >
+                    {!selectedAccountId && <option value="">Select an account</option>}
+                    {accounts.map((acc) => (
+                      <option key={acc.id} value={acc.id}>
+                        {acc.name} (${acc.balance?.toFixed(2)})
+                      </option>
+                    ))}
+                  </select>
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+                    <FiChevronDown className="w-5 h-5" />
+                  </div>
+                </div>
               </div>
 
               <div className="space-y-4">
@@ -355,6 +404,64 @@ export default function Dashboard() {
                 className="w-full bg-black text-white font-bold py-5 rounded-2xl text-xl hover:bg-gray-800 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isProcessing ? 'Processing...' : 'Add Funds'}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* Open Account Modal */}
+      {isOpenAccountOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-white w-full max-w-md rounded-[2.5rem] p-10 shadow-2xl animate-in zoom-in duration-300">
+            <div className="flex justify-between items-center mb-8">
+              <h3 className="text-2xl font-bold text-black">Open New Account</h3>
+              <button onClick={() => setIsOpenAccountOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors" aria-label="Close modal">
+                <FiX className="w-6 h-6 text-black" />
+              </button>
+            </div>
+
+            <form onSubmit={handleOpenAccount} className="space-y-8">
+              <div className="space-y-4">
+                <label className="text-xs font-bold uppercase tracking-widest text-gray-400 ml-1 block">Account Type</label>
+                <div className="relative">
+                  <select
+                    value={newAccountData.accountType}
+                    onChange={(e) => setNewAccountData({ ...newAccountData, accountType: e.target.value })}
+                    className="w-full p-4 pr-12 bg-gray-50 border-none rounded-2xl font-bold text-black focus:ring-2 focus:ring-black outline-none transition-all appearance-none cursor-pointer"
+                  >
+                    <option value="SAVINGS">Savings Account</option>
+                    <option value="CHECKING">Checking Account</option>
+                  </select>
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+                    <FiChevronDown className="w-5 h-5" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <label className="text-xs font-bold uppercase tracking-widest text-gray-400 ml-1 block">Currency</label>
+                <div className="relative">
+                  <select
+                    value={newAccountData.currency}
+                    onChange={(e) => setNewAccountData({ ...newAccountData, currency: e.target.value })}
+                    className="w-full p-4 pr-12 bg-gray-50 border-none rounded-2xl font-bold text-black focus:ring-2 focus:ring-black outline-none transition-all appearance-none cursor-pointer"
+                  >
+                    <option value="USD">USD - US Dollar</option>
+                    <option value="EUR">EUR - Euro</option>
+                    <option value="GBP">GBP - British Pound</option>
+                  </select>
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+                    <FiChevronDown className="w-5 h-5" />
+                  </div>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={isProcessing}
+                className="w-full bg-black text-white font-bold py-5 rounded-2xl text-xl hover:bg-gray-800 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isProcessing ? 'Opening Account...' : 'Open Account'}
               </button>
             </form>
           </div>
