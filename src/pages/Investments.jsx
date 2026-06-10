@@ -1,32 +1,54 @@
 import { useState, useEffect } from 'react';
-import { investmentAPI } from '../services/api';
-import { FiTrendingUp, FiPieChart, FiShoppingBag, FiArrowUpRight, FiSearch } from 'react-icons/fi';
+import { investmentAPI, accountAPI } from '../services/api';
+import { FiTrendingUp, FiPieChart, FiShoppingBag, FiArrowUpRight, FiSearch, FiChevronDown } from 'react-icons/fi';
 import InvestmentsChart from '../components/InvestmentsChart';
 
 export default function Investments() {
   const [portfolio, setPortfolio] = useState(null);
+  const [accounts, setAccounts] = useState([]);
   const [investmentForm, setInvestmentForm] = useState({
     symbol: '',
     shares: '',
+    accountId: '',
   });
+  const [marketPrice, setMarketPrice] = useState(0);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const fetchPortfolio = async () => {
+    const fetchData = async () => {
       try {
-        const res = await investmentAPI.getPortfolio();
-        setPortfolio(res.data);
+        const [portfolioRes, accountsRes] = await Promise.all([
+          investmentAPI.getPortfolio(),
+          accountAPI.getAccounts(),
+        ]);
+        setPortfolio(portfolioRes.data);
+        const fetchedAccounts = accountsRes.data || [];
+        setAccounts(fetchedAccounts);
+        if (fetchedAccounts.length > 0) {
+          setInvestmentForm(prev => ({ ...prev, accountId: fetchedAccounts[0].id }));
+        }
       } catch (error) {
-        setError(error.response?.data?.message || 'Failed to load portfolio');
+        setError(error.response?.data?.message || 'Failed to load data');
       } finally {
         setLoading(false);
       }
     };
-    fetchPortfolio();
+    fetchData();
   }, []);
+
+  // Mock market price logic
+  useEffect(() => {
+    if (investmentForm.symbol) {
+      // Simulate price lookup
+      const mockPrice = (investmentForm.symbol.length * 15.75) + 50;
+      setMarketPrice(mockPrice);
+    } else {
+      setMarketPrice(0);
+    }
+  }, [investmentForm.symbol]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -40,18 +62,36 @@ export default function Investments() {
     e.preventDefault();
     setError('');
     setMessage('');
+
+    const shares = Number.parseInt(investmentForm.shares, 10);
+    const totalCost = shares * marketPrice;
+    const selectedAccount = accounts.find(a => a.id === investmentForm.accountId);
+
+    if (selectedAccount && totalCost > selectedAccount.balance) {
+      const selectedName = selectedAccount.accountType === 'SAVINGS' ? 'Savings Account' : 'Checking Account';
+      setError(`Insufficient funds in ${selectedName}. Required: $${totalCost.toFixed(2)}, Available: $${selectedAccount.balance.toFixed(2)}`);
+      return;
+    }
+
     setSubmitting(true);
 
     try {
       await investmentAPI.buyInvestment({
         symbol: investmentForm.symbol.toUpperCase(),
-        shares: Number.parseInt(investmentForm.shares, 10),
+        shares: shares,
+        accountId: investmentForm.accountId,
+        price: marketPrice, // Sending price for mock/server records
       });
-      setMessage(`Successfully purchased ${investmentForm.shares} shares of ${investmentForm.symbol.toUpperCase()}`);
-      setInvestmentForm({ symbol: '', shares: '' });
+      setMessage(`Successfully purchased ${shares} shares of ${investmentForm.symbol.toUpperCase()}`);
+      setInvestmentForm(prev => ({ ...prev, symbol: '', shares: '' }));
 
-      const res = await investmentAPI.getPortfolio();
-      setPortfolio(res.data);
+      // Refresh data
+      const [portfolioRes, accountsRes] = await Promise.all([
+        investmentAPI.getPortfolio(),
+        accountAPI.getAccounts(),
+      ]);
+      setPortfolio(portfolioRes.data);
+      setAccounts(accountsRes.data || []);
     } catch (err) {
       setError(err.response?.data?.message || 'Purchase failed. Please check your balance.');
     } finally {
@@ -209,6 +249,27 @@ export default function Investments() {
 
               <form onSubmit={handleBuy} className="space-y-6">
                 <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-widest text-gray-400">Pay From Account</label>
+                  <div className="relative">
+                    <select
+                      name="accountId"
+                      value={investmentForm.accountId}
+                      onChange={handleChange}
+                      required
+                      className="w-full px-6 pr-12 py-4 bg-gray-50 border border-gray-100 rounded-2xl font-bold focus:outline-none focus:border-black appearance-none cursor-pointer transition-colors"
+                    >
+                      <option value="">Select account</option>
+                      {accounts.map(acc => (
+                        <option key={acc.id} value={acc.id}>
+                          {acc.accountType === 'SAVINGS' ? 'Savings Account' : 'Checking Account'} (${acc.balance?.toLocaleString()})
+                        </option>
+                      ))}
+                    </select>
+                    <FiChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
                   <label className="text-xs font-bold uppercase tracking-widest text-gray-400">Stock Symbol</label>
                   <input
                     type="text"
@@ -220,6 +281,7 @@ export default function Investments() {
                     className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl font-bold focus:outline-none focus:border-black transition-colors"
                   />
                 </div>
+
                 <div className="space-y-2">
                   <label className="text-xs font-bold uppercase tracking-widest text-gray-400">Number of Shares</label>
                   <input
@@ -237,17 +299,17 @@ export default function Investments() {
                 <div className="bg-gray-50 p-6 rounded-2xl space-y-3">
                   <div className="flex justify-between text-sm text-gray-500 font-medium">
                     <span>Market Price</span>
-                    <span>$--.--</span>
+                    <span>${marketPrice > 0 ? marketPrice.toFixed(2) : '--.--'}</span>
                   </div>
-                  <div className="flex justify-between text-lg font-bold">
+                  <div className="flex justify-between text-lg font-bold border-t border-gray-100 pt-3">
                     <span>Est. Total</span>
-                    <span>$--.--</span>
+                    <span>${(Number(investmentForm.shares) * marketPrice) > 0 ? (Number(investmentForm.shares) * marketPrice).toLocaleString(undefined, { minimumFractionDigits: 2 }) : '--.--'}</span>
                   </div>
                 </div>
 
                 <button
                   type="submit"
-                  disabled={submitting}
+                  disabled={submitting || !investmentForm.symbol || !investmentForm.shares}
                   className="w-full bg-black text-white font-bold py-5 rounded-2xl text-xl hover:bg-gray-800 transition-all shadow-lg hover:shadow-xl disabled:opacity-50"
                 >
                   {submitting ? 'Executing Trade...' : 'Execute Buy'}
