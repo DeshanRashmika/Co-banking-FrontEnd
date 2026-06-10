@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { accountAPI, transactionAPI } from '../services/api';
-import { FiArrowRight, FiInfo } from 'react-icons/fi';
+import { FiArrowRight, FiInfo, FiChevronDown } from 'react-icons/fi';
 
 export default function Transfer() {
   const [accounts, setAccounts] = useState([]);
@@ -28,22 +28,43 @@ export default function Transfer() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => {
+      const newData = { ...prev, [name]: value };
+
+      if (name === 'fromAccountId' && value === prev.toAccountId) {
+        newData.toAccountId = '';
+      } else if (name === 'toAccountId' && value === prev.fromAccountId) {
+        newData.fromAccountId = '';
+      }
+      return newData;
+    });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setMessage('');
+
+    const sourceAccount = accounts.find(a => a.id === formData.fromAccountId);
+    const amount = Number.parseFloat(formData.amount);
+
+    if (formData.fromAccountId === formData.toAccountId) {
+      setError('Source and destination accounts must be different.');
+      return;
+    }
+
+    if (sourceAccount && amount > sourceAccount.balance) {
+      const sourceName = sourceAccount.accountType === 'SAVINGS' ? 'Savings Account' : 'Checking Account';
+      setError(`Insufficient funds in ${sourceName}. Available: $${sourceAccount.balance.toLocaleString()}`);
+      return;
+    }
+
     setLoading(true);
 
     try {
       await transactionAPI.transfer({
         ...formData,
-        amount: Number.parseFloat(formData.amount),
+        amount,
       });
       setMessage('Transfer successful!');
       setFormData({
@@ -52,6 +73,8 @@ export default function Transfer() {
         amount: '',
         description: '',
       });
+      const res = await accountAPI.getAccounts();
+      setAccounts(res.data || []);
     } catch (err) {
       setError(err.response?.data?.message || 'Transfer failed');
     } finally {
@@ -87,20 +110,25 @@ export default function Transfer() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
               <div className="space-y-2">
                 <label className="text-sm font-bold uppercase tracking-wider text-gray-500">From Account</label>
-                <select
-                  name="fromAccountId"
-                  value={formData.fromAccountId}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:border-black transition-colors appearance-none cursor-pointer"
-                >
-                  <option value="">Select source</option>
-                  {accounts.map((account) => (
-                    <option key={account.id} value={account.id}>
-                      {account.name} (${account.balance?.toLocaleString()})
-                    </option>
-                  ))}
-                </select>
+                <div className="relative">
+                  <select
+                    name="fromAccountId"
+                    value={formData.fromAccountId}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-4 pr-12 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:border-black transition-colors appearance-none cursor-pointer"
+                  >
+                    <option value="">Select source</option>
+                    {accounts.map((account) => (
+                      <option key={account.id} value={account.id}>
+                        {account.accountType === 'SAVINGS' ? 'Savings Account' : 'Checking Account'} (${account.balance?.toLocaleString()})
+                      </option>
+                    ))}
+                  </select>
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+                    <FiChevronDown className="w-6 h-6" />
+                  </div>
+                </div>
               </div>
 
               <div className="hidden md:flex justify-center text-gray-300 pt-6">
@@ -109,20 +137,25 @@ export default function Transfer() {
 
               <div className="space-y-2">
                 <label className="text-sm font-bold uppercase tracking-wider text-gray-500">To Account</label>
-                <select
-                  name="toAccountId"
-                  value={formData.toAccountId}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:border-black transition-colors appearance-none cursor-pointer"
-                >
-                  <option value="">Select destination</option>
-                  {accounts.map((account) => (
-                    <option key={account.id} value={account.id}>
-                      {account.name}
-                    </option>
-                  ))}
-                </select>
+                <div className="relative">
+                  <select
+                    name="toAccountId"
+                    value={formData.toAccountId}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-4 pr-12 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:border-black transition-colors appearance-none cursor-pointer"
+                  >
+                    <option value="">Select destination</option>
+                    {accounts.map((account) => (
+                      <option key={account.id} value={account.id}>
+                        {account.accountType === 'SAVINGS' ? 'Savings Account' : 'Checking Account'}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+                    <FiChevronDown className="w-6 h-6" />
+                  </div>
+                </div>
               </div>
             </div>
 
