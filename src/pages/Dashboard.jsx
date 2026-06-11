@@ -1,4 +1,4 @@
-import { useState,useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { accountAPI, notificationAPI } from '../services/api';
 import { useAuth } from '../hooks/useAuth';
@@ -23,7 +23,10 @@ export default function Dashboard() {
   const [isTopUpOpen, setIsTopUpOpen] = useState(false);
   const [topUpAmount, setTopUpAmount] = useState('');
   const [selectedMethod, setSelectedMethod] = useState('visa');
-  const [selectedAccountId, setSelectedAccountId] = useState('');
+
+  const [activeAccountId, setActiveAccountId] = useState(null);
+  const selectedAccountId = activeAccountId || (accounts.length > 0 ? accounts[0].id : '');
+
   const [isProcessing, setIsProcessing] = useState(false);
   const [isOpenAccountOpen, setIsOpenAccountOpen] = useState(false);
   const [newAccountData, setNewAccountData] = useState({
@@ -41,8 +44,11 @@ export default function Dashboard() {
         accountAPI.getAccounts(),
         notificationAPI.getNotifications(),
       ]);
-      setAccounts(accountsRes?.data || []);
+
+      const accountsList = accountsRes?.data || [];
+      setAccounts(accountsList);
       setNotifications(notificationsRes?.data || []);
+
     } catch (err) {
       console.error('Dashboard data fetch error:', err);
       if (err.response?.status === 500) {
@@ -56,14 +62,12 @@ export default function Dashboard() {
   }, []);
 
   useEffect(() => {
-    fetchData();
+    const loadDashboardData = async () => {
+      await fetchData();
+    };
+
+    loadDashboardData();
   }, [fetchData]);
-  
-  useEffect(() => {
-    if (accounts.length > 0 && !selectedAccountId) {
-      setSelectedAccountId(accounts[0].id);
-    }
-  }, [accounts, selectedAccountId]);
 
   const handleOpenAccount = async (e) => {
     e.preventDefault();
@@ -108,7 +112,7 @@ export default function Dashboard() {
       });
       setIsTopUpOpen(false);
       setTopUpAmount('');
-      await fetchData(); 
+      await fetchData();
     } catch (err) {
       console.error('Top up error:', err);
       const errorMsg = err.response?.data?.message || 'Top up failed. Please try again.';
@@ -198,7 +202,6 @@ export default function Dashboard() {
                 <FiPlus className="w-4 h-4" /> Top Up
               </button>
             </div>
-            {/* Abstract decorative shape */}
             <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-gray-800 rounded-full opacity-50 blur-3xl"></div>
           </div>
 
@@ -238,7 +241,7 @@ export default function Dashboard() {
                   <FiPlus className="w-8 h-8 opacity-20" />
                 </div>
                 <p className="font-bold text-black">No accounts found</p>
-                <button 
+                <button
                   onClick={() => setIsOpenAccountOpen(true)}
                   className="text-gray-400 font-medium text-sm hover:text-black transition-colors"
                 >
@@ -264,11 +267,10 @@ export default function Dashboard() {
                 notifications.slice(0, 5).map((n) => (
                   <div key={n.id} className="flex items-center justify-between pb-6 border-b border-gray-50 last:border-0 last:pb-0 group">
                     <div className="flex items-center gap-4">
-                      <div className={`p-3 rounded-2xl transition-colors ${
-                        n.message.toLowerCase().includes('received') || n.message.toLowerCase().includes('top up') 
-                        ? 'bg-green-50 text-green-600 group-hover:bg-green-600 group-hover:text-white' 
+                      <div className={`p-3 rounded-2xl transition-colors ${n.message.toLowerCase().includes('received') || n.message.toLowerCase().includes('top up')
+                        ? 'bg-green-50 text-green-600 group-hover:bg-green-600 group-hover:text-white'
                         : 'bg-gray-50 text-black group-hover:bg-black group-hover:text-white'
-                      }`}>
+                        }`}>
                         {n.message.toLowerCase().includes('received') || n.message.toLowerCase().includes('top up') ? <FiArrowDownLeft className="w-5 h-5" /> : <FiArrowUpRight className="w-5 h-5" />}
                       </div>
                       <div>
@@ -361,14 +363,14 @@ export default function Dashboard() {
                 <label className="text-xs font-bold uppercase tracking-widest text-gray-400 ml-1 block">Target Account</label>
                 <div className="relative">
                   <select
-                    value={selectedAccountId}
-                    onChange={(e) => setSelectedAccountId(e.target.value)}
+                    value={activeAccountId}
+                    onChange={(e) => setActiveAccountId(e.target.value)}
                     className="w-full p-4 pr-12 bg-gray-50 border-none rounded-2xl font-bold text-black focus:ring-2 focus:ring-black outline-none transition-all appearance-none cursor-pointer"
                   >
                     {!selectedAccountId && <option value="">Select an account</option>}
                     {accounts.map((acc) => (
                       <option key={acc.id} value={acc.id}>
-                        {acc.name} (${acc.balance?.toFixed(2)})
+                        {acc.accountType === 'SAVINGS' ? 'Savings' : 'Checking'} - •••• {acc.accountNumber?.slice(-4)} (${acc.balance?.toFixed(2)})
                       </option>
                     ))}
                   </select>
@@ -387,8 +389,8 @@ export default function Dashboard() {
                       type="button"
                       onClick={() => setSelectedMethod(method.id)}
                       className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${selectedMethod === method.id
-                          ? 'border-black bg-black text-white'
-                          : 'border-gray-100 bg-white hover:border-gray-300'
+                        ? 'border-black bg-black text-white'
+                        : 'border-gray-100 bg-white hover:border-gray-300'
                         }`}
                     >
                       <div className="text-xl">{method.icon}</div>
@@ -409,6 +411,7 @@ export default function Dashboard() {
           </div>
         </div>
       )}
+
       {/* Open Account Modal */}
       {isOpenAccountOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
