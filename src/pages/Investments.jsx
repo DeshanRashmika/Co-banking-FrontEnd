@@ -11,11 +11,13 @@ export default function Investments() {
     shares: '',
     accountId: '',
   });
-  const [marketPrice, setMarketPrice] = useState(0);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+
+  const marketPrice = investmentForm.symbol ? (investmentForm.symbol.length * 15.75) + 50 : 0;
+  const activeAccountId = investmentForm.accountId || (accounts.length > 0 ? accounts[0].id : '');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -25,11 +27,7 @@ export default function Investments() {
           accountAPI.getAccounts(),
         ]);
         setPortfolio(portfolioRes.data);
-        const fetchedAccounts = accountsRes.data || [];
-        setAccounts(fetchedAccounts);
-        if (fetchedAccounts.length > 0) {
-          setInvestmentForm(prev => ({ ...prev, accountId: fetchedAccounts[0].id }));
-        }
+        setAccounts(accountsRes.data || []);
       } catch (error) {
         setError(error.response?.data?.message || 'Failed to load data');
       } finally {
@@ -38,17 +36,6 @@ export default function Investments() {
     };
     fetchData();
   }, []);
-
-  // Mock market price logic
-  useEffect(() => {
-    if (investmentForm.symbol) {
-      // Simulate price lookup
-      const mockPrice = (investmentForm.symbol.length * 15.75) + 50;
-      setMarketPrice(mockPrice);
-    } else {
-      setMarketPrice(0);
-    }
-  }, [investmentForm.symbol]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -65,7 +52,8 @@ export default function Investments() {
 
     const shares = Number.parseInt(investmentForm.shares, 10);
     const totalCost = shares * marketPrice;
-    const selectedAccount = accounts.find(a => a.id === investmentForm.accountId);
+    const finalAccountId = activeAccountId;
+    const selectedAccount = accounts.find(a => a.id === finalAccountId);
 
     if (selectedAccount && totalCost > selectedAccount.balance) {
       const selectedName = selectedAccount.accountType === 'SAVINGS' ? 'Savings Account' : 'Checking Account';
@@ -79,13 +67,13 @@ export default function Investments() {
       await investmentAPI.buyInvestment({
         symbol: investmentForm.symbol.toUpperCase(),
         shares: shares,
-        accountId: investmentForm.accountId,
-        price: marketPrice, // Sending price for mock/server records
+        accountId: finalAccountId,
+        price: marketPrice,
       });
+      
       setMessage(`Successfully purchased ${shares} shares of ${investmentForm.symbol.toUpperCase()}`);
-      setInvestmentForm(prev => ({ ...prev, symbol: '', shares: '' }));
+      setInvestmentForm({ symbol: '', shares: '', accountId: finalAccountId });
 
-      // Refresh data
       const [portfolioRes, accountsRes] = await Promise.all([
         investmentAPI.getPortfolio(),
         accountAPI.getAccounts(),
@@ -144,7 +132,6 @@ export default function Investments() {
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-          {/* Portfolio Overview */}
           <div className="lg:col-span-2 space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="bg-black text-white p-8 rounded-[2rem] shadow-xl">
@@ -253,7 +240,7 @@ export default function Investments() {
                   <div className="relative">
                     <select
                       name="accountId"
-                      value={investmentForm.accountId}
+                      value={activeAccountId} 
                       onChange={handleChange}
                       required
                       className="w-full px-6 pr-12 py-4 bg-gray-50 border border-gray-100 rounded-2xl font-bold focus:outline-none focus:border-black appearance-none cursor-pointer transition-colors"
