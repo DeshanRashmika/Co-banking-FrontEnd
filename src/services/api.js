@@ -39,11 +39,18 @@ export const authAPI = {
   loginWithGoogle: (payload) => api.post('/auth/google', payload),
 };
 
+export const userAPI = {
+  getProfile: () => api.get('/user/profile'),
+  updateProfile: (userData) => api.put('/user/profile', userData),
+  changePassword: (passwordData) => api.post('/user/change-password', passwordData),
+};
+
 export const accountAPI = {
   getAccounts: () => api.get('/accounts'),
   getAccountDetails: (accountId) => api.get(`/accounts/${accountId}`),
   getBalance: (accountId) => api.get(`/accounts/${accountId}/balance`),
   topUp: (topUpData) => api.post('/accounts/top-up', topUpData),
+  createAccount: (accountData) => api.post('/accounts', accountData),
 };
 
 export const paymentMethodAPI = {

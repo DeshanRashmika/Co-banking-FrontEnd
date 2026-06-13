@@ -75,7 +75,11 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  // Set session from external auth provider (Google, etc.)
+  const updateUser = useCallback((updatedUserData) => {
+    const newUser = { ...user, ...updatedUserData };
+    localStorage.setItem('userData', JSON.stringify(newUser));
+    setUser(newUser);
+  }, [user]);
   const setSession = useCallback((token, userData) => {
     localStorage.setItem('authToken', token);
     localStorage.setItem('userData', JSON.stringify(userData));
@@ -83,8 +87,8 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const value = useMemo(
-    () => ({ user, loading, error, login, register, logout, setSession }),
-    [user, loading, error, login, register, logout, setSession]
+    () => ({ user, loading, error, login, register, logout, setSession, updateUser }),
+    [user, loading, error, login, register, logout, setSession, updateUser]
   );
 
   return (

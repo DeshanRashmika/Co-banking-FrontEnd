@@ -93,6 +93,18 @@ function AnimatedRoutes() {
             </PrivateRoute>
           }
         />
+
+        <Route
+          path="/profile"
+          element={
+            <PrivateRoute>
+              <>
+                <Navbar />
+                <Profile />
+              </>
+            </PrivateRoute>
+          }
+        />
       </Routes>
     </AnimatePresence>
   );

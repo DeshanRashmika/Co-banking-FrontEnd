@@ -127,7 +127,7 @@ export default function Transactions() {
                   : 'bg-white text-gray-400 border border-gray-100 hover:border-gray-300'
               }`}
             >
-              {account.name}
+              {account.accountType === 'SAVINGS' ? 'Savings Account' : 'Checking Account'}
               <span className={`ml-3 text-xs opacity-50 ${selectedAccountId === account.id ? 'text-white' : 'text-gray-400'}`}>
                 {account.accountNumber?.slice(-4)}
               </span>
