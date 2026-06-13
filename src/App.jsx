@@ -14,6 +14,7 @@ import Transfer from './pages/Transfer'
 import Transactions from './pages/Transactions'
 import Bills from './pages/Bills'
 import Investments from './pages/Investments'
+import Profile from './pages/Profile'
 
 function AnimatedRoutes() {
   const location = useLocation();
