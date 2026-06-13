@@ -127,10 +127,14 @@ export default function Navbar() {
                       <p className="text-xs text-gray-400 truncate">{user?.email}</p>
                     </div>
 
-                    <button className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 hover:text-black transition-colors">
+                    <Link
+                      to="/profile"
+                      onClick={() => setIsProfileOpen(false)}
+                      className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 hover:text-black transition-colors"
+                    >
                       <FiUser className="w-4 h-4" />
                       Your Profile
-                    </button>
+                    </Link>
                     <button className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 hover:text-black transition-colors">
                       <FiSettings className="w-4 h-4" />
                       Settings
