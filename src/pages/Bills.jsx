@@ -12,6 +12,7 @@ export default function Bills() {
   });
   const [loading, setLoading] = useState(true);
   const [paying, setPaying] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
@@ -40,6 +41,7 @@ export default function Bills() {
     setFormData({ amount: bill.amount || '' });
     setMessage('');
     setError('');
+    setShowConfirm(false);
   };
 
   const handleChange = (e) => {
@@ -48,13 +50,27 @@ export default function Bills() {
       ...prev,
       [name]: value,
     }));
+    setError('');
+    setMessage('');
   };
 
-  const handleSubmit = async (e) => {
+  const handleInitiateSubmit = (e) => {
     e.preventDefault();
     setError('');
     setMessage('');
+
+    const amount = Number.parseFloat(formData.amount);
+    if (isNaN(amount) || amount <= 0) {
+      setError('Please enter a valid amount greater than zero.');
+      return;
+    }
+
+    setShowConfirm(true);
+  };
+
+  const handleConfirmPayment = async () => {
     setPaying(true);
+    setShowConfirm(false);
 
     try {
       await billPayAPI.payBill({
@@ -148,10 +164,38 @@ export default function Bills() {
           {/* Payment Form */}
           <div className="lg:col-span-2">
             {selectedBill ? (
-              <div className="bg-white rounded-[2rem] p-10 shadow-sm border border-gray-50 sticky top-8">
+              <div className="bg-white rounded-[2rem] p-10 shadow-sm border border-gray-50 sticky top-8 relative overflow-hidden">
+                {showConfirm && (
+                  <div className="absolute inset-0 bg-white/95 backdrop-blur-sm z-50 flex items-center justify-center p-8">
+                    <div className="max-w-md w-full text-center">
+                      <div className="w-20 h-20 bg-black text-white rounded-full flex items-center justify-center mx-auto mb-6">
+                        <FiCheckCircle size={32} />
+                      </div>
+                      <h3 className="text-2xl font-bold mb-4">Confirm Payment</h3>
+                      <p className="text-gray-500 mb-8">
+                        You are about to pay <span className="text-black font-bold">${Number(formData.amount).toLocaleString()}</span> for your <span className="text-black font-bold">{selectedBill.name}</span>.
+                      </p>
+                      <div className="flex gap-4">
+                        <button 
+                          onClick={() => setShowConfirm(false)}
+                          className="flex-1 px-6 py-4 border border-gray-200 rounded-2xl font-bold hover:bg-gray-50 transition"
+                        >
+                          Cancel
+                        </button>
+                        <button 
+                          onClick={handleConfirmPayment}
+                          className="flex-1 px-6 py-4 bg-black text-white rounded-2xl font-bold hover:bg-gray-800 transition"
+                        >
+                          Confirm
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <h2 className="text-2xl font-bold mb-8">Confirm Payment</h2>
                 
-                <form onSubmit={handleSubmit} className="space-y-10">
+                <form onSubmit={handleInitiateSubmit} className="space-y-10">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                     <div className="space-y-2">
                       <label className="text-sm font-bold uppercase tracking-wider text-gray-500">Payment Amount</label>
