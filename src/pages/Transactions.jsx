@@ -1,6 +1,31 @@
 import { useState, useEffect, useMemo } from 'react';
 import { transactionAPI, accountAPI } from '../services/api';
-import { FiArrowUpRight, FiArrowDownLeft, FiFilter, FiDownload, FiSearch } from 'react-icons/fi';
+import { 
+  FiArrowUpRight, 
+  FiArrowDownLeft, 
+  FiFilter, 
+  FiDownload, 
+  FiSearch, 
+  FiShoppingBag, 
+  FiCoffee, 
+  FiHome, 
+  FiTruck, 
+  FiSmartphone, 
+  FiPlusCircle,
+  FiRepeat
+} from 'react-icons/fi';
+import { motion, AnimatePresence } from 'framer-motion';
+
+const CATEGORY_ICONS = {
+  'Shopping': <FiShoppingBag />,
+  'Food': <FiCoffee />,
+  'Housing': <FiHome />,
+  'Transport': <FiTruck />,
+  'Entertainment': <FiSmartphone />,
+  'Transfer': <FiRepeat />,
+  'Top Up': <FiPlusCircle />,
+  'General': <FiFilter />
+};
 
 export default function Transactions() {
   const [accounts, setAccounts] = useState([]);
@@ -47,11 +72,11 @@ export default function Transactions() {
 
   const filteredTransactions = useMemo(() => {
     if (!searchQuery) return transactions;
-    const q = searchQuery.toString().toLowerCase().trim();
+    const q = searchQuery.toLowerCase().trim();
     return transactions.filter((t) => {
-      const desc = (t.description || '').toString().toLowerCase();
-      const cat = (t.category || '').toString().toLowerCase();
-      const amt = (t.amount || '').toString().toLowerCase();
+      const desc = (t.description || '').toLowerCase();
+      const cat = (t.category || '').toLowerCase();
+      const amt = (t.amount || 0).toString();
       return desc.includes(q) || cat.includes(q) || amt.includes(q);
     });
   }, [transactions, searchQuery]);
@@ -74,20 +99,13 @@ export default function Transactions() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `transactions_${selectedAccountId || 'all'}.csv`;
+    a.download = `transactions_${selectedAccountId}.csv`;
     document.body.appendChild(a);
     a.click();
     a.remove();
-    URL.revokeObjectURL(url);
   };
 
-  if (loading && accounts.length === 0) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-white">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black"></div>
-      </div>
-    );
-  }
+  const getCategoryIcon = (category) => CATEGORY_ICONS[category] || CATEGORY_ICONS['General'];
 
   return (
     <div className="min-h-screen bg-[#F9F9F9] text-black pb-12">
@@ -95,13 +113,16 @@ export default function Transactions() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
             <h1 className="text-4xl font-bold tracking-tight">Transactions</h1>
-            <p className="text-gray-500 mt-2 text-lg">Keep track of your spending and income across all accounts.</p>
+            <p className="text-gray-500 mt-2 text-lg">Keep track of your spending and income.</p>
           </div>
           <div className="flex items-center gap-3">
-            <button className="flex items-center gap-2 px-6 py-3 bg-white border border-gray-200 rounded-2xl font-bold hover:bg-gray-50 transition-colors shadow-sm">
+            <button 
+              onClick={handleExportCSV}
+              className="flex items-center gap-2 px-6 py-3 bg-white border border-gray-200 rounded-2xl font-bold hover:bg-gray-50 transition-all shadow-sm active:scale-95"
+            >
               <FiDownload /> Export
             </button>
-            <button className="flex items-center gap-2 px-6 py-3 bg-black text-white rounded-2xl font-bold hover:bg-gray-800 transition-colors shadow-lg">
+            <button className="flex items-center gap-2 px-6 py-3 bg-black text-white rounded-2xl font-bold hover:bg-gray-800 transition-all shadow-lg active:scale-95">
               <FiFilter /> Filter
             </button>
           </div>
@@ -110,7 +131,7 @@ export default function Transactions() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {error && (
-          <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-8 rounded text-sm">
+          <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-8 rounded shadow-sm">
             {error}
           </div>
         )}
@@ -129,7 +150,7 @@ export default function Transactions() {
             >
               {account.accountType === 'SAVINGS' ? 'Savings Account' : 'Checking Account'}
               <span className={`ml-3 text-xs opacity-50 ${selectedAccountId === account.id ? 'text-white' : 'text-gray-400'}`}>
-                {account.accountNumber?.slice(-4)}
+                •••• {account.accountNumber?.slice(-4)}
               </span>
             </button>
           ))}
@@ -137,27 +158,27 @@ export default function Transactions() {
 
         {/* Transactions Table Container */}
         <div className="bg-white rounded-[2.5rem] shadow-sm border border-gray-50 overflow-hidden">
-          <div className="p-8 border-b border-gray-50 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="p-8 border-b border-gray-50 flex flex-col md:flex-row md:items-center justify-between gap-6">
             <h3 className="text-xl font-bold">Transaction History</h3>
             <div className="relative max-w-md w-full">
-              <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+              <FiSearch className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-300 text-xl" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search by description, category or amount..."
-                className="w-full pl-12 pr-4 py-3 bg-gray-50 border-none rounded-2xl text-sm focus:ring-1 focus:ring-black"
+                placeholder="Search description, category..."
+                className="w-full pl-14 pr-6 py-4 bg-gray-50 border-none rounded-2xl text-sm focus:ring-2 focus:ring-black outline-none transition-all placeholder:text-gray-300"
               />
             </div>
           </div>
 
-            <div className="overflow-x-auto">
+          <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="text-left text-gray-400 text-xs font-bold uppercase tracking-widest border-b border-gray-50">
+                <tr className="text-left text-gray-400 text-xs font-bold uppercase tracking-[0.2em] border-b border-gray-50">
+                  <th className="px-8 py-6">Transaction</th>
                   <th className="px-8 py-6">Date</th>
-                  <th className="px-8 py-6">Description</th>
-                  <th className="px-8 py-6">Type</th>
+                  <th className="px-8 py-6">Category</th>
                   <th className="px-8 py-6 text-right">Amount</th>
                 </tr>
               </thead>
@@ -165,54 +186,59 @@ export default function Transactions() {
                 {loading ? (
                   <tr>
                     <td colSpan="4" className="py-20 text-center">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black mx-auto"></div>
+                      <div className="animate-spin rounded-full h-8 w-8 border-2 border-black/10 border-t-black mx-auto"></div>
                     </td>
                   </tr>
                 ) : filteredTransactions.length > 0 ? (
-                  filteredTransactions.slice(0, visibleCount).map((transaction) => (
-                    <tr key={transaction.id} className="group hover:bg-gray-50 transition-colors">
-                      <td className="px-8 py-6 text-sm font-medium text-gray-500">
-                        {new Date(transaction.date).toLocaleDateString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                          year: 'numeric'
-                        })}
-                      </td>
-                      <td className="px-8 py-6">
-                        <div className="flex items-center gap-4">
-                          <div className={`p-3 rounded-2xl ${
-                            transaction.type === 'credit' ? 'bg-black text-white' : 'bg-gray-100 text-black'
-                          }`}>
-                            {transaction.type === 'credit' ? <FiArrowDownLeft /> : <FiArrowUpRight />}
+                  <AnimatePresence>
+                    {filteredTransactions.slice(0, visibleCount).map((transaction, idx) => (
+                      <motion.tr 
+                        key={transaction.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: idx * 0.03 }}
+                        className="group hover:bg-gray-50 transition-colors"
+                      >
+                        <td className="px-8 py-6">
+                          <div className="flex items-center gap-4">
+                            <div className={`p-3 rounded-2xl transition-colors ${
+                              transaction.type === 'credit' ? 'bg-black text-white' : 'bg-gray-50 text-black group-hover:bg-white'
+                            }`}>
+                              {transaction.type === 'credit' ? <FiArrowDownLeft className="w-5 h-5" /> : <FiArrowUpRight className="w-5 h-5" />}
+                            </div>
+                            <div>
+                              <p className="font-bold text-lg">{transaction.description}</p>
+                              <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mt-0.5">{transaction.type}</p>
+                            </div>
                           </div>
-                          <div>
-                            <p className="font-bold">{transaction.description}</p>
-                            <p className="text-xs text-gray-400 uppercase tracking-widest mt-0.5">{transaction.category || 'General'}</p>
+                        </td>
+                        <td className="px-8 py-6 text-sm font-medium text-gray-500">
+                          {new Date(transaction.date).toLocaleDateString('en-US', {
+                            month: 'short', day: 'numeric', year: 'numeric'
+                          })}
+                        </td>
+                        <td className="px-8 py-6">
+                          <div className="flex items-center gap-2 text-sm font-bold text-gray-600">
+                            <span className="text-lg opacity-50">{getCategoryIcon(transaction.category)}</span>
+                            {transaction.category || 'General'}
                           </div>
-                        </div>
-                      </td>
-                      <td className="px-8 py-6">
-                        <span className={`text-xs font-bold px-3 py-1 rounded-full uppercase tracking-tighter ${
-                          transaction.type === 'credit' ? 'bg-black text-white' : 'bg-gray-100 text-gray-600'
+                        </td>
+                        <td className={`px-8 py-6 text-right font-bold text-xl ${
+                          transaction.type === 'credit' ? 'text-black' : 'text-gray-400'
                         }`}>
-                          {transaction.type}
-                        </span>
-                      </td>
-                      <td className={`px-8 py-6 text-right font-bold text-lg ${
-                        transaction.type === 'credit' ? 'text-black' : 'text-gray-400'
-                      }`}>
-                        {transaction.type === 'credit' ? '+' : '-'}${transaction.amount?.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                      </td>
-                    </tr>
-                  ))
+                          {transaction.type === 'credit' ? '+' : '-'}${transaction.amount?.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                        </td>
+                      </motion.tr>
+                    ))}
+                  </AnimatePresence>
                 ) : (
                   <tr>
-                    <td colSpan="4" className="py-32 text-center text-gray-400">
-                      <div className="mb-6 opacity-10">
-                        <FiDownload className="w-16 h-16 mx-auto" />
+                    <td colSpan="4" className="py-32 text-center text-gray-300">
+                      <div className="mb-6 opacity-5 flex justify-center">
+                        <FiSearch size={80} />
                       </div>
-                      <p className="text-xl font-bold">No transactions found</p>
-                      <p className="text-sm mt-1">Try selecting a different account or adjusting filters.</p>
+                      <p className="text-2xl font-bold text-black">No transactions found</p>
+                      <p className="text-sm mt-2">Try adjusting your search or filters.</p>
                     </td>
                   </tr>
                 )}
@@ -220,24 +246,14 @@ export default function Transactions() {
             </table>
           </div>
           
-          <div className="p-8 border-t border-gray-50 flex items-center justify-center">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={handleExportCSV}
-                disabled={transactions.length === 0}
-                className="flex items-center gap-2 px-6 py-3 bg-white border border-gray-200 rounded-2xl font-bold hover:bg-gray-50 transition-colors shadow-sm"
-              >
-                <FiDownload /> Export CSV
-              </button>
-
-              <button
-                onClick={() => setVisibleCount((c) => c + 20)}
-                disabled={visibleCount >= filteredTransactions.length}
-                className="text-sm font-bold text-gray-400 hover:text-black transition-colors disabled:opacity-50"
-              >
-                Load more transactions
-              </button>
-            </div>
+          <div className="p-8 border-t border-gray-50 flex items-center justify-center bg-gray-50/30">
+            <button
+              onClick={() => setVisibleCount((c) => c + 20)}
+              disabled={visibleCount >= filteredTransactions.length}
+              className="px-10 py-4 bg-white border border-gray-200 rounded-2xl font-bold text-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
+            >
+              Load more transactions
+            </button>
           </div>
         </div>
       </main>
