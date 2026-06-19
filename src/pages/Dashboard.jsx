@@ -5,8 +5,10 @@ import { useAuth } from '../hooks/useAuth';
 import { FaCcVisa, FaPaypal, FaCcMastercard } from 'react-icons/fa';
 import homeAsset from '../assets/home.png';
 import { motion } from 'framer-motion';
-import { FiPlus, FiArrowUpRight, FiArrowDownLeft, FiCreditCard, FiPieChart, FiX, FiChevronDown } from 'react-icons/fi';
+import { FiPlus, FiArrowUpRight, FiArrowDownLeft, FiCreditCard, FiPieChart } from 'react-icons/fi';
 import usePeriod from '../hooks/usePeriod';
+import TopUpModal from '../components/dashboard/TopUpModal';
+import OpenAccountModal from '../components/dashboard/OpenAccountModal';
 
 const PAYMENT_METHODS = [
   { id: 'visa', name: 'Visa •••• 4242', icon: <FaCcVisa /> },
@@ -62,11 +64,7 @@ export default function Dashboard() {
   }, []);
 
   useEffect(() => {
-    const loadDashboardData = async () => {
-      await fetchData();
-    };
-
-    loadDashboardData();
+    fetchData();
   }, [fetchData]);
 
   const handleOpenAccount = async (e) => {
@@ -78,7 +76,7 @@ export default function Dashboard() {
         currency: newAccountData.currency
       });
       setIsOpenAccountOpen(false);
-      setNewAccountData({ accountType: 'SAVINGS', currency: 'USD' });
+      setNewAccountData({ accountType: 'SAVINGS', currency: 'USD'});
       await fetchData();
     } catch (err) {
       console.error('Open account error:', err);
@@ -330,146 +328,29 @@ export default function Dashboard() {
         </div>
       </main>
 
-      {/* Top Up Modal */}
-      {isTopUpOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
-          <div className="bg-white w-full max-w-md rounded-[2.5rem] p-10 shadow-2xl animate-in zoom-in duration-300">
-            <div className="flex justify-between items-center mb-8">
-              <h3 className="text-2xl font-bold text-black">Top Up Funds</h3>
-              <button onClick={() => setIsTopUpOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors" aria-label="Close modal">
-                <FiX className="w-6 h-6 text-black" />
-              </button>
-            </div>
+      <TopUpModal 
+        isOpen={isTopUpOpen}
+        onClose={() => setIsTopUpOpen(false)}
+        onTopUp={handleTopUp}
+        accounts={accounts}
+        activeAccountId={selectedAccountId}
+        setActiveAccountId={setActiveAccountId}
+        topUpAmount={topUpAmount}
+        setTopUpAmount={setTopUpAmount}
+        selectedMethod={selectedMethod}
+        setSelectedMethod={setSelectedMethod}
+        isProcessing={isProcessing}
+        paymentMethods={PAYMENT_METHODS}
+      />
 
-            <form onSubmit={handleTopUp} className="space-y-8">
-              <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-widest text-gray-400 ml-1">Amount</label>
-                <div className="relative">
-                  <span className="absolute left-6 top-1/2 -translate-y-1/2 text-2xl font-bold text-gray-400">$</span>
-                  <input
-                    type="number"
-                    value={topUpAmount}
-                    onChange={(e) => setTopUpAmount(e.target.value)}
-                    placeholder="0.00"
-                    required
-                    min="1"
-                    step="0.01"
-                    className="w-full pl-12 pr-6 py-5 bg-gray-50 border-none rounded-2xl text-2xl font-bold focus:ring-2 focus:ring-black outline-none transition-all"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <label className="text-xs font-bold uppercase tracking-widest text-gray-400 ml-1 block">Target Account</label>
-                <div className="relative">
-                  <select
-                    value={activeAccountId}
-                    onChange={(e) => setActiveAccountId(e.target.value)}
-                    className="w-full p-4 pr-12 bg-gray-50 border-none rounded-2xl font-bold text-black focus:ring-2 focus:ring-black outline-none transition-all appearance-none cursor-pointer"
-                  >
-                    {!selectedAccountId && <option value="">Select an account</option>}
-                    {accounts.map((acc) => (
-                      <option key={acc.id} value={acc.id}>
-                        {acc.accountType === 'SAVINGS' ? 'Savings' : 'Checking'} - •••• {acc.accountNumber?.slice(-4)} (${acc.balance?.toFixed(2)})
-                      </option>
-                    ))}
-                  </select>
-                  <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
-                    <FiChevronDown className="w-5 h-5" />
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <label className="text-xs font-bold uppercase tracking-widest text-gray-400 ml-1 block">Payment Method</label>
-                <div className="grid grid-cols-3 gap-3">
-                  {PAYMENT_METHODS.map((method) => (
-                    <button
-                      key={method.id}
-                      type="button"
-                      onClick={() => setSelectedMethod(method.id)}
-                      className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${selectedMethod === method.id
-                        ? 'border-black bg-black text-white'
-                        : 'border-gray-100 bg-white hover:border-gray-300'
-                        }`}
-                    >
-                      <div className="text-xl">{method.icon}</div>
-                      <span className="text-[10px] font-bold uppercase tracking-wider">{method.id}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                disabled={isProcessing || !topUpAmount || accounts.length === 0}
-                className="w-full bg-black text-white font-bold py-5 rounded-2xl text-xl hover:bg-gray-800 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isProcessing ? 'Processing...' : 'Add Funds'}
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Open Account Modal */}
-      {isOpenAccountOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
-          <div className="bg-white w-full max-w-md rounded-[2.5rem] p-10 shadow-2xl animate-in zoom-in duration-300">
-            <div className="flex justify-between items-center mb-8">
-              <h3 className="text-2xl font-bold text-black">Open New Account</h3>
-              <button onClick={() => setIsOpenAccountOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors" aria-label="Close modal">
-                <FiX className="w-6 h-6 text-black" />
-              </button>
-            </div>
-
-            <form onSubmit={handleOpenAccount} className="space-y-8">
-              <div className="space-y-4">
-                <label className="text-xs font-bold uppercase tracking-widest text-gray-400 ml-1 block">Account Type</label>
-                <div className="relative">
-                  <select
-                    value={newAccountData.accountType}
-                    onChange={(e) => setNewAccountData({ ...newAccountData, accountType: e.target.value })}
-                    className="w-full p-4 pr-12 bg-gray-50 border-none rounded-2xl font-bold text-black focus:ring-2 focus:ring-black outline-none transition-all appearance-none cursor-pointer"
-                  >
-                    <option value="SAVINGS">Savings Account</option>
-                    <option value="CHECKING">Checking Account</option>
-                  </select>
-                  <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
-                    <FiChevronDown className="w-5 h-5" />
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <label className="text-xs font-bold uppercase tracking-widest text-gray-400 ml-1 block">Currency</label>
-                <div className="relative">
-                  <select
-                    value={newAccountData.currency}
-                    onChange={(e) => setNewAccountData({ ...newAccountData, currency: e.target.value })}
-                    className="w-full p-4 pr-12 bg-gray-50 border-none rounded-2xl font-bold text-black focus:ring-2 focus:ring-black outline-none transition-all appearance-none cursor-pointer"
-                  >
-                    <option value="USD">USD - US Dollar</option>
-                    <option value="EUR">EUR - Euro</option>
-                    <option value="GBP">GBP - British Pound</option>
-                  </select>
-                  <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
-                    <FiChevronDown className="w-5 h-5" />
-                  </div>
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                disabled={isProcessing}
-                className="w-full bg-black text-white font-bold py-5 rounded-2xl text-xl hover:bg-gray-800 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isProcessing ? 'Opening Account...' : 'Open Account'}
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
+      <OpenAccountModal 
+        isOpen={isOpenAccountOpen}
+        onClose={() => setIsOpenAccountOpen(false)}
+        onOpenAccount={handleOpenAccount}
+        newAccountData={newAccountData}
+        setNewAccountData={setNewAccountData}
+        isProcessing={isProcessing}
+      />
     </motion.div>
   );
 }
