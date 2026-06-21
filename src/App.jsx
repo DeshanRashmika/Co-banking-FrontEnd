@@ -1,113 +1,56 @@
 
-import 'react'
+import { Suspense, lazy } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
 import { AuthProvider } from './context/AuthContext.jsx'
+import { useAuth } from './hooks/useAuth'
 import PrivateRoute from './components/PrivateRoute'
 import Navbar from './components/Navbar'
 
-// Pages
-import Login from './pages/Login'
-import Register from './pages/Register'
-import Dashboard from './pages/Dashboard'
-import Transfer from './pages/Transfer'
-import Transactions from './pages/Transactions'
-import Bills from './pages/Bills'
-import Investments from './pages/Investments'
-import Profile from './pages/Profile'
+const Landing = lazy(() => import('./pages/Landing'))
+const Login = lazy(() => import('./pages/Login'))
+const Register = lazy(() => import('./pages/Register'))
+const Dashboard = lazy(() => import('./pages/Dashboard'))
+const Transfer = lazy(() => import('./pages/Transfer'))
+const Transactions = lazy(() => import('./pages/Transactions'))
+const Bills = lazy(() => import('./pages/Bills'))
+const Investments = lazy(() => import('./pages/Investments'))
+const Profile = lazy(() => import('./pages/Profile'))
+
+const LoadingFallback = () => (
+  <div className="flex items-center justify-center min-h-screen bg-gray-950">
+    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500"></div>
+  </div>
+);
 
 function AnimatedRoutes() {
   const location = useLocation();
+  const { user, loading } = useAuth();
+
+  if (loading) return <LoadingFallback />;
   
   return (
-    <AnimatePresence mode="wait">
-      <Routes location={location} key={location.pathname}>
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        
-        <Route
-          path="/"
-          element={
-            <PrivateRoute>
-              <Navbar />
-              <Navigate to="/dashboard" />
-            </PrivateRoute>
-          }
-        />
-        
-        <Route
-          path="/dashboard"
-          element={
-            <PrivateRoute>
-              <>
-                <Navbar />
-                <Dashboard />
-              </>
-            </PrivateRoute>
-          }
-        />
-        
-        <Route
-          path="/transfer"
-          element={
-            <PrivateRoute>
-              <>
-                <Navbar />
-                <Transfer />
-              </>
-            </PrivateRoute>
-          }
-        />
-        
-        <Route
-          path="/transactions"
-          element={
-            <PrivateRoute>
-              <>
-                <Navbar />
-                <Transactions />
-              </>
-            </PrivateRoute>
-          }
-        />
-        
-        <Route
-          path="/bills"
-          element={
-            <PrivateRoute>
-              <>
-                <Navbar />
-                <Bills />
-              </>
-            </PrivateRoute>
-          }
-        />
-        
-        <Route
-          path="/investments"
-          element={
-            <PrivateRoute>
-              <>
-                <Navbar />
-                <Investments />
-              </>
-            </PrivateRoute>
-          }
-        />
-
-        <Route
-          path="/profile"
-          element={
-            <PrivateRoute>
-              <>
-                <Navbar />
-                <Profile />
-              </>
-            </PrivateRoute>
-          }
-        />
-      </Routes>
-    </AnimatePresence>
+    <div className="min-h-screen bg-gray-950 text-white">
+      {user && <Navbar />}
+      <AnimatePresence mode="wait">
+        <Suspense fallback={<LoadingFallback />}>
+          <Routes location={location} key={location.pathname}>
+            <Route path="/" element={<Landing />} />
+            <Route path="/login" element={!user ? <Login /> : <Navigate to="/dashboard" />} />
+            <Route path="/register" element={!user ? <Register /> : <Navigate to="/dashboard" />} />
+            
+            <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+            <Route path="/transfer" element={<PrivateRoute><Transfer /></PrivateRoute>} />
+            <Route path="/transactions" element={<PrivateRoute><Transactions /></PrivateRoute>} />
+            <Route path="/bills" element={<PrivateRoute><Bills /></PrivateRoute>} />
+            <Route path="/investments" element={<PrivateRoute><Investments /></PrivateRoute>} />
+            <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
+            
+            <Route path="*" element={<Navigate to={user ? "/dashboard" : "/login"} />} />
+          </Routes>
+        </Suspense>
+      </AnimatePresence>
+    </div>
   );
 }
 
