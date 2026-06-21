@@ -89,7 +89,7 @@ export default function Login() {
       <div className="hidden md:flex md:w-1/2 bg-[#F5F5F5] items-center justify-center p-12">
         <div className="max-w-md w-full">
           <img src={home2Asset} alt="Banking" className="w-full h-auto hover:grayscale-0 transition-all duration-700" />
-          <h2 className="text-4xl font-bold tracking-tighter mb-4">Secure, Simple, and Modern Banking.</h2>
+          <h2 className="text-4xl font-bold text-cyan-700 mb-4">Secure, Simple, and Modern Banking.</h2>
           <p className="text-gray-500 text-lg">Experience the next generation of financial management with SecureBank.</p>
         </div>
       </div>
@@ -99,7 +99,7 @@ export default function Login() {
         <div className="max-w-md w-full">
           <div className="flex items-center gap-2 mb-6">
             <img src={iconAsset} alt="SecureBank" className="h-10 w-10 object-contain" />
-            <span className="text-2xl font-bold tracking-tight">SecureBank</span>
+            <span className="text-gray-950 text-2xl font-bold ">SecureBank</span>
           </div>
 
           <h1 className="text-3xl font-bold mb-2">Welcome Back</h1>
