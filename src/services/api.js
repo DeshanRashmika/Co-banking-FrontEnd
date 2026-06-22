@@ -49,7 +49,12 @@ export const accountAPI = {
   getAccounts: () => api.get('/accounts'),
   getAccountDetails: (accountId) => api.get(`/accounts/${accountId}`),
   getBalance: (accountId) => api.get(`/accounts/${accountId}/balance`),
-  topUp: (topUpData) => api.post('/accounts/top-up', topUpData),
+  topUp: (topUpData) => api.post('/accounts/top-up', {
+    accountId: topUpData.accountId,
+    amount: topUpData.amount,
+    accountType: 'SAVINGS', 
+    currency: 'USD'
+  }),
   createAccount: (accountData) => api.post('/accounts', accountData),
 };
 
@@ -71,8 +76,13 @@ export const billPayAPI = {
 
 export const investmentAPI = {
   getPortfolio: () => api.get('/investments/portfolio'),
-  buyInvestment: (investmentData) => api.post('/investments/buy', investmentData),
-  sellInvestment: (investmentId) => api.post(`/investments/sell/${investmentId}`),
+  buyInvestment: (investmentData) => api.post('/investments/buy', {
+    symbol: investmentData.symbol,
+    shares: investmentData.shares,
+    purchasePrice: investmentData.price, 
+    accountId: investmentData.accountId
+  }),
+  sellInvestment: (investmentId, sellData) => api.post(`/investments/sell/${investmentId}`, sellData),
 };
 
 export const notificationAPI = {
