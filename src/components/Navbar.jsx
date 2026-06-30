@@ -101,7 +101,7 @@ export default function Navbar() {
               <button
                 className="p-2 text-gray-500 hover:bg-gray-50 hover:text-black rounded-full transition-colors"
                 aria-label="Settings"
-                onClick={() => navigate('/dashboard')} // Placeholder
+                onClick={() => navigate('/settings')}
               >
                 <FiSettings className="w-5 h-5" />
               </button>
@@ -135,10 +135,14 @@ export default function Navbar() {
                       <FiUser className="w-4 h-4" />
                       Your Profile
                     </Link>
-                    <button className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 hover:text-black transition-colors">
+                    <Link
+                      to="/settings"
+                      onClick={() => setIsProfileOpen(false)}
+                      className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 hover:text-black transition-colors"
+                    >
                       <FiSettings className="w-4 h-4" />
                       Settings
-                    </button>
+                    </Link>
 
                     <div className="h-px bg-gray-50 my-1"></div>
 
