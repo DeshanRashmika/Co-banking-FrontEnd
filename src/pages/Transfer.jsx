@@ -48,7 +48,7 @@ export default function Transfer() {
       const amount = Number.parseFloat(formData.amount);
       const sourceAccount = accounts.find(a => a.id === formData.fromAccountId);
       
-      if (isNaN(amount) || amount <= 0) {
+      if (Number.isNaN(amount) || amount <= 0) {
         setError('Please enter a valid amount greater than zero.');
         return;
       }
@@ -88,6 +88,23 @@ export default function Transfer() {
 
   const sourceAccount = accounts.find(a => a.id === formData.fromAccountId);
   const destAccount = accounts.find(a => a.id === formData.toAccountId);
+  const stepClassName = (s) => {
+    if (step === s) return 'bg-black text-white scale-110';
+    if (step > s) return 'bg-green-500 text-white';
+    return 'bg-gray-100 text-gray-400';
+  };
+
+  const stepLabel = (s) => {
+    if (s === 1) return 'Accounts';
+    if (s === 2) return 'Amount';
+    return 'Review';
+  };
+
+  const toAccountCardClassName = (accountId) => {
+    if (formData.toAccountId === accountId) return 'border-black bg-black text-white shadow-xl scale-[1.02]';
+    if (accountId === formData.fromAccountId) return 'opacity-30 cursor-not-allowed border-gray-100 bg-gray-50';
+    return 'border-gray-50 bg-gray-50 text-black hover:border-gray-200';
+  };
 
   return (
     <div className="min-h-screen bg-[#F9F9F9] pb-12">
@@ -97,13 +114,11 @@ export default function Transfer() {
           <div className="flex items-center gap-4 mt-4">
             {[1, 2, 3].map((s) => (
               <div key={s} className="flex items-center gap-2">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-all ${
-                  step === s ? 'bg-black text-white scale-110' : step > s ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-400'
-                }`}>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-all ${stepClassName(s)}`}>
                   {step > s ? <FiCheck /> : s}
                 </div>
                 <span className={`text-xs font-bold uppercase tracking-wider ${step === s ? 'text-black' : 'text-gray-400'}`}>
-                  {s === 1 ? 'Accounts' : s === 2 ? 'Amount' : 'Review'}
+                  {stepLabel(s)}
                 </span>
                 {s < 3 && <div className="w-8 h-px bg-gray-200 mx-2" />}
               </div>
@@ -140,8 +155,9 @@ export default function Transfer() {
                 className="space-y-10"
               >
                 <div className="space-y-6">
-                  <label className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400 block">From Account</label>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <fieldset>
+                    <legend className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400 block mb-4">From Account</legend>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {accounts.map((acc) => (
                       <button
                         key={acc.id}
@@ -165,24 +181,20 @@ export default function Transfer() {
                         </p>
                       </button>
                     ))}
-                  </div>
+                    </div>
+                  </fieldset>
                 </div>
 
                 <div className="space-y-6">
-                  <label className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400 block">To Account</label>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <fieldset>
+                    <legend className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400 block mb-4">To Account</legend>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {accounts.map((acc) => (
                       <button
                         key={acc.id}
                         disabled={acc.id === formData.fromAccountId}
                         onClick={() => handleSelectAccount('toAccountId', acc.id)}
-                        className={`p-6 rounded-3xl border-2 text-left transition-all ${
-                          formData.toAccountId === acc.id
-                            ? 'border-black bg-black text-white shadow-xl scale-[1.02]'
-                            : acc.id === formData.fromAccountId
-                            ? 'opacity-30 cursor-not-allowed border-gray-100 bg-gray-50'
-                            : 'border-gray-50 bg-gray-50 text-black hover:border-gray-200'
-                        }`}
+                        className={`p-6 rounded-3xl border-2 text-left transition-all ${toAccountCardClassName(acc.id)}`}
                       >
                         <div className="flex justify-between items-start mb-4">
                           <FiCreditCard className="w-6 h-6" />
@@ -194,7 +206,8 @@ export default function Transfer() {
                         </p>
                       </button>
                     ))}
-                  </div>
+                    </div>
+                  </fieldset>
                 </div>
 
                 <button
@@ -219,10 +232,11 @@ export default function Transfer() {
                 </button>
 
                 <div className="space-y-4">
-                  <label className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400 block">Amount to Transfer</label>
+                  <label htmlFor="transfer-amount" className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400 block">Amount to Transfer</label>
                   <div className="relative">
                     <span className="absolute left-6 top-1/2 -translate-y-1/2 text-4xl font-bold text-gray-300">$</span>
                     <input
+                      id="transfer-amount"
                       type="number"
                       value={formData.amount}
                       onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
@@ -237,8 +251,9 @@ export default function Transfer() {
                 </div>
 
                 <div className="space-y-4">
-                  <label className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400 block">Note (Optional)</label>
+                  <label htmlFor="transfer-note" className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400 block">Note (Optional)</label>
                   <textarea
+                    id="transfer-note"
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     className="w-full px-6 py-6 bg-gray-50 border-none rounded-[2rem] focus:ring-2 focus:ring-black outline-none transition-all resize-none text-lg"

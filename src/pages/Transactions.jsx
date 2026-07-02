@@ -88,7 +88,7 @@ export default function Transactions() {
     const headers = ['Date', 'Description', 'Category', 'Type', 'Amount'];
     const rows = items.map((t) => [
       new Date(t.date).toISOString(),
-      (t.description || '').replace(/"/g, '""'),
+      (t.description || '').replaceAll('"', '""'),
       t.category || '',
       t.type || '',
       (t.amount || 0).toFixed(2),
@@ -106,6 +106,73 @@ export default function Transactions() {
   };
 
   const getCategoryIcon = (category) => CATEGORY_ICONS[category] || CATEGORY_ICONS['General'];
+  let tableContent;
+
+  if (loading) {
+    tableContent = (
+      <tr>
+        <td colSpan="4" className="py-20 text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-2 border-black/10 border-t-black mx-auto"></div>
+        </td>
+      </tr>
+    );
+  } else if (filteredTransactions.length > 0) {
+    tableContent = (
+      <AnimatePresence>
+        {filteredTransactions.slice(0, visibleCount).map((transaction, idx) => (
+          <motion.tr 
+            key={transaction.id}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: idx * 0.03 }}
+            className="group hover:bg-gray-50 transition-colors"
+          >
+            <td className="px-8 py-6">
+              <div className="flex items-center gap-4">
+                <div className={`p-3 rounded-2xl transition-colors ${
+                  transaction.type === 'credit' ? 'bg-black text-white' : 'bg-gray-50 text-black group-hover:bg-white'
+                }`}>
+                  {transaction.type === 'credit' ? <FiArrowDownLeft className="w-5 h-5" /> : <FiArrowUpRight className="w-5 h-5" />}
+                </div>
+                <div>
+                  <p className="font-bold text-lg">{transaction.description}</p>
+                  <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mt-0.5">{transaction.type}</p>
+                </div>
+              </div>
+            </td>
+            <td className="px-8 py-6 text-sm font-medium text-gray-500">
+              {new Date(transaction.date).toLocaleDateString('en-US', {
+                month: 'short', day: 'numeric', year: 'numeric'
+              })}
+            </td>
+            <td className="px-8 py-6">
+              <div className="flex items-center gap-2 text-sm font-bold text-gray-600">
+                <span className="text-lg opacity-50">{getCategoryIcon(transaction.category)}</span>
+                {transaction.category || 'General'}
+              </div>
+            </td>
+            <td className={`px-8 py-6 text-right font-bold text-xl ${
+              transaction.type === 'credit' ? 'text-black' : 'text-gray-400'
+            }`}>
+              {transaction.type === 'credit' ? '+' : '-'}${transaction.amount?.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+            </td>
+          </motion.tr>
+        ))}
+      </AnimatePresence>
+    );
+  } else {
+    tableContent = (
+      <tr>
+        <td colSpan="4" className="py-32 text-center text-gray-300">
+          <div className="mb-6 opacity-5 flex justify-center">
+            <FiSearch size={80} />
+          </div>
+          <p className="text-2xl font-bold text-black">No transactions found</p>
+          <p className="text-sm mt-2">Try adjusting your search or filters.</p>
+        </td>
+      </tr>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#F9F9F9] text-black pb-12">
@@ -183,65 +250,7 @@ export default function Transactions() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
-                {loading ? (
-                  <tr>
-                    <td colSpan="4" className="py-20 text-center">
-                      <div className="animate-spin rounded-full h-8 w-8 border-2 border-black/10 border-t-black mx-auto"></div>
-                    </td>
-                  </tr>
-                ) : filteredTransactions.length > 0 ? (
-                  <AnimatePresence>
-                    {filteredTransactions.slice(0, visibleCount).map((transaction, idx) => (
-                      <motion.tr 
-                        key={transaction.id}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: idx * 0.03 }}
-                        className="group hover:bg-gray-50 transition-colors"
-                      >
-                        <td className="px-8 py-6">
-                          <div className="flex items-center gap-4">
-                            <div className={`p-3 rounded-2xl transition-colors ${
-                              transaction.type === 'credit' ? 'bg-black text-white' : 'bg-gray-50 text-black group-hover:bg-white'
-                            }`}>
-                              {transaction.type === 'credit' ? <FiArrowDownLeft className="w-5 h-5" /> : <FiArrowUpRight className="w-5 h-5" />}
-                            </div>
-                            <div>
-                              <p className="font-bold text-lg">{transaction.description}</p>
-                              <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mt-0.5">{transaction.type}</p>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-8 py-6 text-sm font-medium text-gray-500">
-                          {new Date(transaction.date).toLocaleDateString('en-US', {
-                            month: 'short', day: 'numeric', year: 'numeric'
-                          })}
-                        </td>
-                        <td className="px-8 py-6">
-                          <div className="flex items-center gap-2 text-sm font-bold text-gray-600">
-                            <span className="text-lg opacity-50">{getCategoryIcon(transaction.category)}</span>
-                            {transaction.category || 'General'}
-                          </div>
-                        </td>
-                        <td className={`px-8 py-6 text-right font-bold text-xl ${
-                          transaction.type === 'credit' ? 'text-black' : 'text-gray-400'
-                        }`}>
-                          {transaction.type === 'credit' ? '+' : '-'}${transaction.amount?.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                        </td>
-                      </motion.tr>
-                    ))}
-                  </AnimatePresence>
-                ) : (
-                  <tr>
-                    <td colSpan="4" className="py-32 text-center text-gray-300">
-                      <div className="mb-6 opacity-5 flex justify-center">
-                        <FiSearch size={80} />
-                      </div>
-                      <p className="text-2xl font-bold text-black">No transactions found</p>
-                      <p className="text-sm mt-2">Try adjusting your search or filters.</p>
-                    </td>
-                  </tr>
-                )}
+                {tableContent}
               </tbody>
             </table>
           </div>
