@@ -37,6 +37,8 @@ export const authAPI = {
   register: (userData) => api.post('/auth/register', userData),
   logout: () => api.post('/auth/logout'),
   loginWithGoogle: (payload) => api.post('/auth/google', payload),
+  requestPasswordReset: (payload) => api.post('/auth/forgot-password', payload),
+  resetPassword: (payload) => api.post('/auth/reset-password', payload),
 };
 
 export const userAPI = {
