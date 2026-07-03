@@ -13,6 +13,27 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { login, setSession } = useAuth();
+  const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+  const allowedOrigins = (import.meta.env.VITE_GOOGLE_AUTHORIZED_ORIGINS || '')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+  const currentOrigin = globalThis.location?.origin || '';
+  const originAllowed = allowedOrigins.length === 0
+    ? currentOrigin.startsWith('http://localhost') || currentOrigin.startsWith('http://127.0.0.1')
+    : allowedOrigins.includes(currentOrigin);
+  const canUseGoogleSignIn = Boolean(clientId && originAllowed);
+  const [googleMessage, setGoogleMessage] = useState(() => {
+    if (!clientId) {
+      return 'Google sign-in is not configured for this environment.';
+    }
+
+    if (!originAllowed) {
+      return 'Google sign-in is disabled because this origin is not authorized for the current client ID.';
+    }
+
+    return '';
+  });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -30,8 +51,9 @@ export default function Login() {
   };
 
   useEffect(() => {
-    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-    if (!clientId) return;
+    if (!canUseGoogleSignIn) {
+      return;
+    }
 
     const script = document.createElement('script');
     script.src = 'https://accounts.google.com/gsi/client';
@@ -43,39 +65,50 @@ export default function Login() {
       const googleAccounts = globalThis.google?.accounts?.id;
 
       if (googleAccounts) {
-        googleAccounts.initialize({
-          client_id: clientId,
-          callback: async (response) => {
-            try {
-              setLoading(true);
-              setError('');
+        try {
+          googleAccounts.initialize({
+            client_id: clientId,
+            callback: async (response) => {
+              try {
+                setLoading(true);
+                setError('');
+                setGoogleMessage('');
 
-              const res = await authAPI.loginWithGoogle({ idToken: response.credential });
-              const { token, user } = res.data;
-              setSession(token, user);
-              navigate('/dashboard');
-            } catch (err) {
-              console.error(err);
-              setError('Google sign-in failed');
-            } finally {
-              setLoading(false);
-            }
-          },
-        });
+                const res = await authAPI.loginWithGoogle({ idToken: response.credential });
+                const { token, user } = res.data;
+                setSession(token, user);
+                navigate('/dashboard');
+              } catch (err) {
+                console.error(err);
+                setError('Google sign-in failed');
+              } finally {
+                setLoading(false);
+              }
+            },
+          });
 
-        googleAccounts.renderButton(
-          document.getElementById('google-signin'),
-          { theme: 'outline', size: 'large', width: '100%' }
-        );
+          googleAccounts.renderButton(
+            document.getElementById('google-signin'),
+            { theme: 'outline', size: 'large', width: '100%' }
+          );
+        } catch (err) {
+          console.error(err);
+          setGoogleMessage('Google sign-in could not be initialized for this origin.');
+        }
+      } else {
+        setGoogleMessage('Google sign-in is unavailable in this browser.');
       }
     };
 
     script.addEventListener('load', onLoad);
+    script.addEventListener('error', () => {
+      setGoogleMessage('Google sign-in could not be loaded right now.');
+    });
     return () => {
       script.removeEventListener('load', onLoad);
       script.remove();
     };
-  }, [navigate, setSession]);
+  }, [canUseGoogleSignIn, clientId, navigate, setSession]);
 
   return (
     <motion.div 
@@ -102,13 +135,19 @@ export default function Login() {
             <span className="text-gray-950 text-2xl font-bold ">SecureBank</span>
           </div>
 
-          <h1 className="text-3xl font-bold mb-2">Welcome Back</h1>
+          <h1 className="text-3xl font-bold mb-2 text-cyan-700">Welcome Back</h1>
           <p className="text-gray-500 mb-8">Please enter your details to sign in.</p>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
               <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded text-sm">
                 {error}
+              </div>
+            )}
+
+            {googleMessage && (
+              <div className="bg-amber-50 border-l-4 border-amber-500 text-amber-800 p-4 rounded text-sm leading-relaxed">
+                {googleMessage}
               </div>
             )}
 
@@ -120,8 +159,8 @@ export default function Login() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-black transition-colors"
-                placeholder="name@example.com"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-black caret-black placeholder:text-gray-400 focus:outline-none focus:border-black transition-colors"
+                placeholder=""
               />
             </div>
 
@@ -131,7 +170,7 @@ export default function Login() {
                 <button
                   type="button"
                   onClick={() => navigate('/forgot-password')}
-                  className="text-xs font-bold hover:underline"
+                  className="text-xs font-bold hover:underline text-black"
                 >
                   Forgot Password?
                 </button>
@@ -142,7 +181,7 @@ export default function Login() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-black transition-colors"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-black caret-black placeholder:text-gray-400 focus:outline-none focus:border-black transition-colors"
                 placeholder="••••••••"
               />
             </div>

@@ -84,66 +84,71 @@ export default function Register() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-bold uppercase tracking-wider text-gray-500">First Name</label>
+                <label htmlFor="firstName" className="text-sm font-bold uppercase tracking-wider text-gray-500">First Name</label>
                 <input
+                  id="firstName"
                   type="text"
                   name="firstName"
                   value={formData.firstName}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-black transition-colors"
-                  placeholder="John"
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-black caret-black placeholder:text-gray-400 focus:outline-none focus:border-black transition-colors"
+                  placeholder=""
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-bold uppercase tracking-wider text-gray-500">Last Name</label>
+                <label htmlFor="lastName" className="text-sm font-bold uppercase tracking-wider text-gray-500">Last Name</label>
                 <input
+                  id="lastName"
                   type="text"
                   name="lastName"
                   value={formData.lastName}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-black transition-colors"
-                  placeholder="Doe"
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-black caret-black placeholder:text-gray-400 focus:outline-none focus:border-black transition-colors"
+                  placeholder=""
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-bold uppercase tracking-wider text-gray-500">Email Address</label>
+              <label htmlFor="registerEmail" className="text-sm font-bold uppercase tracking-wider text-gray-500">Email Address</label>
               <input
+                id="registerEmail"
                 type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-black transition-colors"
-                placeholder="john@example.com"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-black caret-black placeholder:text-gray-400 focus:outline-none focus:border-black transition-colors"
+                placeholder=""
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-bold uppercase tracking-wider text-gray-500">Password</label>
+              <label htmlFor="registerPassword" className="text-sm font-bold uppercase tracking-wider text-gray-500">Password</label>
               <input
+                id="registerPassword"
                 type="password"
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-black transition-colors"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-black caret-black placeholder:text-gray-400 focus:outline-none focus:border-black transition-colors"
                 placeholder="••••••••"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-bold uppercase tracking-wider text-gray-500">Confirm Password</label>
+              <label htmlFor="confirmPassword" className="text-sm font-bold uppercase tracking-wider text-gray-500">Confirm Password</label>
               <input
+                id="confirmPassword"
                 type="password"
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-black transition-colors"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-black caret-black placeholder:text-gray-400 focus:outline-none focus:border-black transition-colors"
                 placeholder="••••••••"
               />
             </div>
