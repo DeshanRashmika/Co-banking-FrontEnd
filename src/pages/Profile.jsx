@@ -157,10 +157,11 @@ export default function Profile() {
                 <form onSubmit={handleUpdateProfile} className="space-y-6">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <label className="text-sm font-bold text-gray-700">First Name</label>
+                      <label htmlFor="profileFirstName" className="text-sm font-bold text-gray-700">First Name</label>
                       <div className="relative">
                         <FiUser className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                         <input
+                          id="profileFirstName"
                           type="text"
                           name="firstName"
                           value={personalInfo.firstName}
@@ -172,10 +173,11 @@ export default function Profile() {
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm font-bold text-gray-700">Last Name</label>
+                      <label htmlFor="profileLastName" className="text-sm font-bold text-gray-700">Last Name</label>
                       <div className="relative">
                         <FiUser className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                         <input
+                          id="profileLastName"
                           type="text"
                           name="lastName"
                           value={personalInfo.lastName}
@@ -189,10 +191,11 @@ export default function Profile() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-gray-700">Email Address</label>
+                    <label htmlFor="profileEmail" className="text-sm font-bold text-gray-700">Email Address</label>
                     <div className="relative">
                       <FiMail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                       <input
+                        id="profileEmail"
                         type="email"
                         name="email"
                         value={personalInfo.email}
@@ -205,10 +208,11 @@ export default function Profile() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-gray-700">Phone Number</label>
+                    <label htmlFor="profilePhone" className="text-sm font-bold text-gray-700">Phone Number</label>
                     <div className="relative">
                       <FiPhone className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                       <input
+                        id="profilePhone"
                         type="tel"
                         name="phone"
                         value={personalInfo.phone}
@@ -243,10 +247,11 @@ export default function Profile() {
 
                 <form onSubmit={handleChangePassword} className="space-y-6">
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-gray-700">Current Password</label>
+                    <label htmlFor="currentPassword" className="text-sm font-bold text-gray-700">Current Password</label>
                     <div className="relative">
                       <FiLock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                       <input
+                        id="currentPassword"
                         type="password"
                         name="currentPassword"
                         value={securityData.currentPassword}
@@ -260,10 +265,11 @@ export default function Profile() {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <label className="text-sm font-bold text-gray-700">New Password</label>
+                      <label htmlFor="newPassword" className="text-sm font-bold text-gray-700">New Password</label>
                       <div className="relative">
                         <FiLock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                         <input
+                          id="newPassword"
                           type="password"
                           name="newPassword"
                           value={securityData.newPassword}
@@ -275,10 +281,11 @@ export default function Profile() {
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm font-bold text-gray-700">Confirm New Password</label>
+                      <label htmlFor="confirmNewPassword" className="text-sm font-bold text-gray-700">Confirm New Password</label>
                       <div className="relative">
                         <FiLock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                         <input
+                          id="confirmNewPassword"
                           type="password"
                           name="confirmPassword"
                           value={securityData.confirmPassword}

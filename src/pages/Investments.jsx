@@ -87,12 +87,15 @@ export default function Investments() {
     }
   };
 
-  const handleSell = async (investmentId) => {
-    if (!window.confirm('Are you sure you want to sell this investment?')) return;
+  const handleSell = async (holding) => {
+    if (!globalThis.confirm(`Are you sure you want to sell your ${holding.shares} shares of ${holding.symbol}?`)) return;
 
     try {
-      await investmentAPI.sellInvestment(investmentId);
-      setMessage('Investment sold successfully!');
+      await investmentAPI.sellInvestment(holding.id, {
+        shares: holding.shares,
+        sellPrice: holding.currentPrice
+      });
+      setMessage(`Successfully sold all shares of ${holding.symbol}`);
       const res = await investmentAPI.getPortfolio();
       setPortfolio(res.data);
     } catch (err) {
@@ -134,7 +137,7 @@ export default function Investments() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
           <div className="lg:col-span-2 space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-black text-white p-8 rounded-[2rem] shadow-xl">
+              <div className="bg-black text-white p-8 rounded-4xl shadow-xl">
                 <p className="text-gray-400 font-medium mb-1">Total Portfolio Value</p>
                 <h2 className="text-4xl font-bold tracking-tighter">${portfolio?.totalValue?.toLocaleString(undefined, { minimumFractionDigits: 2 })}</h2>
                 <div className="mt-6 flex items-center gap-2 text-green-400 font-bold">
@@ -142,7 +145,7 @@ export default function Investments() {
                   <span>+12.5% this month</span>
                 </div>
               </div>
-              <div className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm flex flex-col justify-between">
+              <div className="bg-white p-8 rounded-4xl border border-gray-100 shadow-sm flex flex-col justify-between">
                 <div>
                   <p className="text-gray-400 font-medium mb-1">Active Positions</p>
                   <h2 className="text-3xl font-bold">{portfolio?.holdings?.length || 0} Assets</h2>
@@ -195,7 +198,7 @@ export default function Investments() {
                         </td>
                         <td className="px-4 py-6 text-right">
                           <button
-                            onClick={() => handleSell(holding.id)}
+                            onClick={() => handleSell(holding)}
                             className="bg-white border border-gray-200 px-4 py-2 rounded-xl text-sm font-bold hover:bg-black hover:text-white transition-all shadow-sm"
                           >
                             Sell
@@ -236,9 +239,10 @@ export default function Investments() {
 
               <form onSubmit={handleBuy} className="space-y-6">
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-widest text-gray-400">Pay From Account</label>
+                  <label htmlFor="investment-account" className="text-xs font-bold uppercase tracking-widest text-gray-400">Pay From Account</label>
                   <div className="relative">
                     <select
+                      id="investment-account"
                       name="accountId"
                       value={activeAccountId} 
                       onChange={handleChange}
@@ -257,8 +261,9 @@ export default function Investments() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-widest text-gray-400">Stock Symbol</label>
+                  <label htmlFor="stock-symbol" className="text-xs font-bold uppercase tracking-widest text-gray-400">Stock Symbol</label>
                   <input
+                    id="stock-symbol"
                     type="text"
                     name="symbol"
                     value={investmentForm.symbol}
@@ -270,8 +275,9 @@ export default function Investments() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-widest text-gray-400">Number of Shares</label>
+                  <label htmlFor="share-count" className="text-xs font-bold uppercase tracking-widest text-gray-400">Number of Shares</label>
                   <input
+                    id="share-count"
                     type="number"
                     name="shares"
                     value={investmentForm.shares}
