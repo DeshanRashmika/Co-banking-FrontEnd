@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import PropTypes from 'prop-types';
 import { useAuth } from '../hooks/useAuth';
 import {
   FiUser, FiLock, FiBell, FiSun, FiGlobe,
@@ -26,6 +27,11 @@ function Toggle({ enabled, onChange }) {
     </button>
   );
 }
+
+Toggle.propTypes = {
+  enabled: PropTypes.bool.isRequired,
+  onChange: PropTypes.func.isRequired,
+};
 
 /* ── Password field with show/hide ─────────────────────────── */
 function PasswordField({ label, name, value, onChange, placeholder }) {
@@ -55,6 +61,14 @@ function PasswordField({ label, name, value, onChange, placeholder }) {
   );
 }
 
+PasswordField.propTypes = {
+  label: PropTypes.string.isRequired,
+  name: PropTypes.string.isRequired,
+  value: PropTypes.string.isRequired,
+  onChange: PropTypes.func.isRequired,
+  placeholder: PropTypes.string,
+};
+
 /* ── Text input field ───────────────────────────────────────── */
 function InputField({ label, icon: Icon, type = 'text', name, value, onChange, placeholder, disabled }) {
   return (
@@ -75,6 +89,17 @@ function InputField({ label, icon: Icon, type = 'text', name, value, onChange, p
     </div>
   );
 }
+
+InputField.propTypes = {
+  label: PropTypes.string.isRequired,
+  icon: PropTypes.elementType,
+  type: PropTypes.string,
+  name: PropTypes.string.isRequired,
+  value: PropTypes.string.isRequired,
+  onChange: PropTypes.func.isRequired,
+  placeholder: PropTypes.string,
+  disabled: PropTypes.bool,
+};
 
 /* ── Section block ──────────────────────────────────────────── */
 function SectionBlock({ title, desc, children }) {
