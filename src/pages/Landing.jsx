@@ -1,9 +1,9 @@
 import { Link } from 'react-router-dom';
 import { motion, useScroll, useTransform, useInView } from 'framer-motion';
 import { useRef } from 'react';
+import PropTypes from 'prop-types';
 import { useAuth } from '../hooks/useAuth';
 import iconPng from '../assets/icon-removebg-preview.png';
-import home2Asset from '../assets/home2.png';
 import {
   FiShield, FiZap, FiGlobe, FiTrendingUp, FiArrowRight,
   FiCheckCircle, FiLock, FiCreditCard, FiBarChart2, FiSend
@@ -27,6 +27,12 @@ function FadeIn({ children, delay = 0, className = '' }) {
     </motion.div>
   );
 }
+
+FadeIn.propTypes = {
+  children: PropTypes.node.isRequired,
+  delay: PropTypes.number,
+  className: PropTypes.string,
+};
 
 // ── Stats data ────────────────────────────────────────────────────────────────
 const STATS = [
@@ -263,7 +269,7 @@ export default function Landing() {
             transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
             className="relative rounded-3xl border border-white/10 bg-gradient-to-b from-white/10 to-white/[0.03] backdrop-blur-xl overflow-hidden shadow-2xl"
           >
-            <img src={home2Asset} alt="Co-Banking Dashboard" className="w-full h-auto object-cover rounded-3xl opacity-90" />
+            <img src={iconPng} alt="Co-Banking Dashboard" className="w-full h-auto object-contain rounded-3xl opacity-90 p-10" />
 
             {/* Floating stat cards */}
             <div className="absolute top-6 left-6 bg-gray-950/80 backdrop-blur-xl border border-white/10 rounded-2xl px-4 py-3 shadow-xl">
@@ -493,8 +499,8 @@ export default function Landing() {
                 >
                   {/* Stars */}
                   <div className="flex gap-1 mb-5">
-                    {[...Array(5)].map((_, s) => (
-                      <span key={s} className="text-yellow-400 text-sm">★</span>
+                    {Array.from({ length: 5 }).map((_, s) => (
+                      <span key={`${t.name}-${s}`} className="text-yellow-400 text-sm">★</span>
                     ))}
                   </div>
                   <p className="text-gray-300 leading-relaxed mb-6 text-sm">"{t.text}"</p>
@@ -575,7 +581,7 @@ export default function Landing() {
               <div className="text-[10px] font-bold uppercase tracking-widest text-gray-600 mb-4">Product</div>
               <div className="space-y-2.5">
                 {['Features', 'Security', 'Pricing', 'Changelog'].map((l) => (
-                  <a key={l} href="#" className="block text-gray-500 text-sm hover:text-white transition-colors">{l}</a>
+                  <button key={l} type="button" className="block text-left text-gray-500 text-sm hover:text-white transition-colors">{l}</button>
                 ))}
               </div>
             </div>
@@ -585,7 +591,7 @@ export default function Landing() {
               <div className="text-[10px] font-bold uppercase tracking-widest text-gray-600 mb-4">Company</div>
               <div className="space-y-2.5">
                 {['About', 'Blog', 'Careers', 'Press'].map((l) => (
-                  <a key={l} href="#" className="block text-gray-500 text-sm hover:text-white transition-colors">{l}</a>
+                  <button key={l} type="button" className="block text-left text-gray-500 text-sm hover:text-white transition-colors">{l}</button>
                 ))}
               </div>
             </div>
@@ -595,7 +601,7 @@ export default function Landing() {
               <div className="text-[10px] font-bold uppercase tracking-widest text-gray-600 mb-4">Legal</div>
               <div className="space-y-2.5">
                 {['Privacy Policy', 'Terms of Service', 'Cookie Policy', 'Compliance'].map((l) => (
-                  <a key={l} href="#" className="block text-gray-500 text-sm hover:text-white transition-colors">{l}</a>
+                  <button key={l} type="button" className="block text-left text-gray-500 text-sm hover:text-white transition-colors">{l}</button>
                 ))}
               </div>
             </div>

@@ -40,8 +40,6 @@ export default function Dashboard() {
 
   const fetchData = useCallback(async () => {
     try {
-      setLoading(true);
-      setError('');
       const [accountsRes, notificationsRes] = await Promise.all([
         accountAPI.getAccounts(),
         notificationAPI.getNotifications(),
@@ -63,8 +61,17 @@ export default function Dashboard() {
     }
   }, []);
 
+  const refreshData = useCallback(async () => {
+    setLoading(true);
+    await fetchData();
+  }, [fetchData]);
+
   useEffect(() => {
-    fetchData();
+    const timer = globalThis.setTimeout(() => {
+      void fetchData();
+    }, 0);
+
+    return () => globalThis.clearTimeout(timer);
   }, [fetchData]);
 
   const handleOpenAccount = async (e) => {
@@ -77,7 +84,7 @@ export default function Dashboard() {
       });
       setIsOpenAccountOpen(false);
       setNewAccountData({ accountType: 'SAVINGS', currency: 'USD'});
-      await fetchData();
+      await refreshData();
     } catch (err) {
       console.error('Open account error:', err);
       alert(err.response?.data?.message || 'Failed to open account. Please try again.');
@@ -110,7 +117,7 @@ export default function Dashboard() {
       });
       setIsTopUpOpen(false);
       setTopUpAmount('');
-      await fetchData();
+      await refreshData();
     } catch (err) {
       console.error('Top up error:', err);
       const errorMsg = err.response?.data?.message || 'Top up failed. Please try again.';
@@ -150,7 +157,7 @@ export default function Dashboard() {
           </div>
           <div className="flex items-center gap-3">
             <button
-              onClick={fetchData}
+              onClick={refreshData}
               disabled={loading}
               className="p-2.5 bg-white border border-gray-100 rounded-xl text-gray-400 hover:text-black hover:bg-gray-50 transition-all shadow-sm active:scale-95 disabled:opacity-50"
               aria-label="Refresh data"
