@@ -1,8 +1,17 @@
-import { useState, useCallback, useMemo } from 'react';
+import { createContext, useState, useCallback, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { authAPI } from '../services/api';
-import { AuthContext } from './authContext';
 
+export const AuthContext = createContext({
+  user: null,
+  loading: false,
+  error: null,
+  login: async () => {},
+  register: async () => {},
+  logout: async () => {},
+  setSession: () => {},
+  updateUser: () => {},
+});
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
     const token = localStorage.getItem('authToken');
