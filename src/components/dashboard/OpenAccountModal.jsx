@@ -121,6 +121,24 @@ export default function OpenAccountModal({
                 </div>
               </div>
 
+              <div className="space-y-4">
+                <label className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400 ml-1 block">Opening Deposit</label>
+                <div className="relative">
+                  <span className="absolute left-6 top-1/2 -translate-y-1/2 text-2xl font-bold text-gray-300">$</span>
+                  <input
+                    type="number"
+                    min="1"
+                    step="0.01"
+                    required
+                    value={newAccountData.amount}
+                    onChange={(e) => setNewAccountData({ ...newAccountData, amount: e.target.value })}
+                    placeholder="0.00"
+                    className="w-full pl-12 pr-6 py-5 bg-gray-50 border-none rounded-2xl text-2xl font-bold focus:ring-2 focus:ring-black outline-none transition-all placeholder:text-gray-300"
+                  />
+                </div>
+                <p className="text-xs text-gray-400 ml-1">An initial deposit is required to activate the account.</p>
+              </div>
+
               <div className="p-4 bg-blue-50/50 rounded-2xl flex gap-3 items-start border border-blue-100/50">
                 <FiInfo className="mt-1 text-blue-600 shrink-0" />
                 <p className="text-sm text-blue-800 leading-relaxed">
@@ -130,7 +148,7 @@ export default function OpenAccountModal({
 
               <button
                 type="submit"
-                disabled={isProcessing}
+                disabled={isProcessing || !newAccountData.amount}
                 className="w-full bg-black text-white font-bold py-5 rounded-[2rem] text-xl hover:bg-gray-800 transition-all shadow-xl active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isProcessing ? (
