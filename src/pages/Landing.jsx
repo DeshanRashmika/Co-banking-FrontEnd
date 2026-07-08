@@ -42,6 +42,14 @@ const STATS = [
   { value: '99.99%',label: 'Uptime SLA' },
 ];
 
+const HERO_PROOFS = [
+  { value: '2 sec', label: 'Average transfer time' },
+  { value: '24/7', label: 'Human support' },
+  { value: '0 hidden', label: 'Fees or surprises' },
+];
+
+const TRUSTED_BY = ['Visa', 'Mastercard', 'SWIFT', 'Apple Pay'];
+
 // ── Feature cards data ────────────────────────────────────────────────────────
 const FEATURES = [
   {
@@ -123,7 +131,7 @@ export default function Landing() {
   const heroOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
 
   return (
-    <div className="bg-[#030712] min-h-screen text-white overflow-x-hidden font-sans selection:bg-cyan-500/30">
+    <div className="relative min-h-screen overflow-x-hidden bg-[#02040a] text-white font-sans selection:bg-cyan-500/30">
 
       {/* ── Global background ── */}
       <div className="fixed inset-0 z-0 pointer-events-none">
@@ -186,123 +194,147 @@ export default function Landing() {
       {/* ══════════════════════════════════════════
           HERO
       ══════════════════════════════════════════ */}
-      <section ref={heroRef} className="relative min-h-screen flex flex-col items-center justify-center text-center px-6 pt-32 pb-20 z-10">
-        <motion.div style={{ y: heroY, opacity: heroOpacity }} className="max-w-5xl mx-auto">
+      <section ref={heroRef} className="relative z-10 min-h-screen px-6 pt-28 pb-20">
+        <div className="mx-auto grid max-w-7xl items-center gap-16 lg:grid-cols-[1.03fr_0.97fr] lg:min-h-[calc(100vh-7rem)]">
+          <motion.div style={{ y: heroY, opacity: heroOpacity }} className="max-w-3xl">
+            {/* Badge */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5 }}
+              className="inline-flex items-center gap-2 px-4 py-1.5 mb-8 rounded-full bg-cyan-500/10 border border-cyan-500/25 backdrop-blur-sm"
+            >
+              <HiSparkles className="text-cyan-400" size={14} />
+              <span className="text-[11px] font-bold tracking-[0.25em] text-cyan-400 uppercase">Next-Gen Financial OS</span>
+            </motion.div>
 
-          {/* Badge */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 mb-8 rounded-full bg-cyan-500/10 border border-cyan-500/25 backdrop-blur-sm"
-          >
-            <HiSparkles className="text-cyan-400" size={14} />
-            <span className="text-[11px] font-bold tracking-[0.25em] text-cyan-400 uppercase">Next-Gen Financial OS</span>
-          </motion.div>
+            {/* Headline */}
+            <motion.h1
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+              className="max-w-[12ch] text-5xl font-black leading-[0.9] tracking-tighter sm:text-7xl lg:text-[5.5rem]"
+            >
+              Banking Built for
+              <br />
+              <span className="gradient-text">The Future</span>
+            </motion.h1>
 
-          {/* Headline */}
-          <motion.h1
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
-            className="text-5xl sm:text-7xl md:text-8xl font-black leading-[0.92] tracking-tighter mb-8"
-          >
-            Banking Built for
-            <br />
-            <span className="gradient-text">The Future</span>
-          </motion.h1>
+            {/* Sub-headline */}
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.3 }}
+              className="mt-8 max-w-2xl text-lg leading-relaxed text-gray-400 md:text-xl"
+            >
+              One unified platform for payments, investments, multi-currency accounts,
+              and real-time analytics. Built to feel fast, feel premium, and stay secure.
+            </motion.p>
 
-          {/* Sub-headline */}
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.3 }}
-            className="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto mb-12 leading-relaxed"
-          >
-            One unified platform for payments, investments, multi-currency accounts,
-            and real-time analytics — engineered for performance and absolute security.
-          </motion.p>
+            {/* CTAs */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.45 }}
+              className="mt-10 flex flex-col gap-4 sm:flex-row"
+            >
+              <Link to="/register"
+                className="group inline-flex items-center justify-center gap-2 rounded-2xl bg-cyan-500 px-8 py-4 text-base font-bold text-white shadow-2xl shadow-cyan-500/30 transition-all hover:scale-[1.03] hover:bg-cyan-400 active:scale-[0.98]">
+                Open Free Account
+                <FiArrowRight className="transition-transform group-hover:translate-x-1" />
+              </Link>
+              <a href="#features"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 px-8 py-4 text-base font-semibold text-gray-300 transition-all hover:border-white/20 hover:bg-white/5">
+                Explore Platform
+              </a>
+            </motion.div>
 
-          {/* CTAs */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.45 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center mb-16"
-          >
-            <Link to="/register"
-              className="group flex items-center justify-center gap-2 bg-cyan-500 hover:bg-cyan-400 text-white px-8 py-4 rounded-2xl text-base font-bold transition-all hover:scale-[1.03] active:scale-[0.98] shadow-2xl shadow-cyan-500/30">
-              Open Free Account
-              <FiArrowRight className="group-hover:translate-x-1 transition-transform" />
-            </Link>
-            <a href="#features"
-              className="flex items-center justify-center gap-2 px-8 py-4 rounded-2xl text-base font-semibold border border-white/10 hover:bg-white/5 hover:border-white/20 transition-all text-gray-300">
-              Explore Platform
-            </a>
-          </motion.div>
+            {/* Trust row */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.65 }}
+              className="mt-10 flex flex-wrap gap-3"
+            >
+              {TRUSTED_BY.map((brand) => (
+                <span key={brand} className="rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-xs font-semibold tracking-[0.18em] text-gray-400 uppercase">
+                  {brand}
+                </span>
+              ))}
+            </motion.div>
 
-          {/* Trust badges */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.65 }}
-            className="flex flex-wrap justify-center gap-6 text-[12px] text-gray-500 font-semibold"
-          >
-            {['256-bit Encryption', 'FDIC Insured', 'No Hidden Fees', '24/7 Support'].map((t) => (
-              <span key={t} className="flex items-center gap-1.5">
-                <FiCheckCircle className="text-cyan-500" size={13} /> {t}
-              </span>
-            ))}
-          </motion.div>
-        </motion.div>
-
-        {/* Hero dashboard mockup */}
-        <motion.div
-          initial={{ opacity: 0, y: 60 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          className="relative mt-20 w-full max-w-4xl mx-auto"
-        >
-          <div className="absolute -inset-6 bg-cyan-500/10 blur-[80px] rounded-full" />
-          <motion.div
-            animate={{ y: [0, -12, 0] }}
-            transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
-            className="relative rounded-3xl border border-white/10 bg-gradient-to-b from-white/10 to-white/[0.03] backdrop-blur-xl overflow-hidden shadow-2xl"
-          >
-            <img src={iconPng} alt="Co-Banking Dashboard" className="w-full h-auto object-contain rounded-3xl opacity-90 p-10" />
-
-            {/* Floating stat cards */}
-            <div className="absolute top-6 left-6 bg-gray-950/80 backdrop-blur-xl border border-white/10 rounded-2xl px-4 py-3 shadow-xl">
-              <div className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1">Portfolio</div>
-              <div className="text-white font-black text-xl">$24,812.50</div>
-              <div className="text-green-400 text-xs font-bold">↑ +8.4% this month</div>
-            </div>
-
-            <div className="absolute bottom-6 right-6 bg-gray-950/80 backdrop-blur-xl border border-white/10 rounded-2xl px-4 py-3 shadow-xl">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-cyan-500/20 rounded-full flex items-center justify-center">
-                  <FiSend className="text-cyan-400" size={14} />
+            {/* Proof points */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.75 }}
+              className="mt-10 grid gap-4 sm:grid-cols-3"
+            >
+              {HERO_PROOFS.map((item) => (
+                <div key={item.label} className="rounded-3xl border border-white/10 bg-white/[0.03] p-4 backdrop-blur-sm">
+                  <div className="text-2xl font-black text-white">{item.value}</div>
+                  <div className="mt-1 text-xs font-semibold uppercase tracking-[0.22em] text-gray-500">{item.label}</div>
                 </div>
-                <div>
-                  <div className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Last Transfer</div>
-                  <div className="text-white font-bold text-sm">$1,200 → Marcus</div>
+              ))}
+            </motion.div>
+          </motion.div>
+
+          {/* Hero dashboard mockup */}
+          <motion.div
+            initial={{ opacity: 0, y: 60 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
+            className="relative w-full"
+          >
+            <div className="absolute -inset-8 bg-cyan-500/10 blur-[100px] rounded-full" />
+            <motion.div
+              animate={{ y: [0, -12, 0] }}
+              transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
+              className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-b from-white/10 to-white/[0.03] shadow-2xl backdrop-blur-xl"
+            >
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(34,211,238,0.16),_transparent_42%)]" />
+              <div className="relative p-5 sm:p-8 lg:p-10">
+                <img src={iconPng} alt="Co-Banking Dashboard" className="w-full rounded-[1.5rem] object-contain opacity-90" />
+              </div>
+
+              {/* Floating stat cards */}
+              <div className="absolute left-4 top-4 rounded-2xl border border-white/10 bg-gray-950/80 px-4 py-3 shadow-xl backdrop-blur-xl sm:left-6 sm:top-6">
+                <div className="mb-1 text-[10px] font-bold uppercase tracking-widest text-gray-500">Portfolio</div>
+                <div className="text-xl font-black text-white">$24,812.50</div>
+                <div className="text-xs font-bold text-green-400">↑ +8.4% this month</div>
+              </div>
+
+              <div className="absolute bottom-4 right-4 rounded-2xl border border-white/10 bg-gray-950/80 px-4 py-3 shadow-xl backdrop-blur-xl sm:bottom-6 sm:right-6">
+                <div className="flex items-center gap-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-cyan-500/20">
+                    <FiSend className="text-cyan-400" size={14} />
+                  </div>
+                  <div>
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Last Transfer</div>
+                    <div className="text-sm font-bold text-white">$1,200 → Marcus</div>
+                  </div>
                 </div>
               </div>
-            </div>
+
+              <div className="absolute left-4 bottom-4 hidden max-w-[13rem] rounded-2xl border border-white/10 bg-white/[0.04] p-4 shadow-xl backdrop-blur-xl lg:block">
+                <div className="text-[10px] font-bold uppercase tracking-widest text-cyan-400">Live activity</div>
+                <div className="mt-2 text-sm font-semibold text-white">Cards, transfers, and investments update in real time.</div>
+              </div>
+            </motion.div>
           </motion.div>
-        </motion.div>
+        </div>
       </section>
 
 
       {/* ══════════════════════════════════════════
           STATS BAR
       ══════════════════════════════════════════ */}
-      <section className="relative z-10 py-16 border-y border-white/5">
-        <div className="max-w-6xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8">
+      <section className="relative z-10 border-y border-white/5 py-16">
+        <div className="mx-auto grid max-w-6xl grid-cols-2 gap-4 px-6 md:grid-cols-4 md:gap-6">
           {STATS.map((s, i) => (
-            <FadeIn key={s.label} delay={i * 0.1} className="text-center">
-              <div className="text-4xl md:text-5xl font-black gradient-text mb-2">{s.value}</div>
-              <div className="text-gray-500 text-sm font-semibold uppercase tracking-widest">{s.label}</div>
+            <FadeIn key={s.label} delay={i * 0.1} className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 text-center backdrop-blur-sm">
+              <div className="mb-2 text-3xl font-black gradient-text md:text-5xl">{s.value}</div>
+              <div className="text-xs font-semibold uppercase tracking-[0.24em] text-gray-500 md:text-sm">{s.label}</div>
             </FadeIn>
           ))}
         </div>
