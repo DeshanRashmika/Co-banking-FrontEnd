@@ -60,7 +60,7 @@ export default function Bills() {
     setMessage('');
 
     const amount = Number.parseFloat(formData.amount);
-    if (isNaN(amount) || amount <= 0) {
+    if (Number.isNaN(amount) || amount <= 0) {
       setError('Please enter a valid amount greater than zero.');
       return;
     }
@@ -198,10 +198,11 @@ export default function Bills() {
                 <form onSubmit={handleInitiateSubmit} className="space-y-10">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                     <div className="space-y-2">
-                      <label className="text-sm font-bold uppercase tracking-wider text-gray-500">Payment Amount</label>
+                      <label htmlFor="bill-amount" className="text-sm font-bold uppercase tracking-wider text-gray-500">Payment Amount</label>
                       <div className="relative">
                         <FiDollarSign className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
                         <input
+                          id="bill-amount"
                           type="number"
                           name="amount"
                           value={formData.amount}
@@ -214,7 +215,7 @@ export default function Bills() {
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-sm font-bold uppercase tracking-wider text-gray-500">Scheduled Date</label>
+                      <div className="text-sm font-bold uppercase tracking-wider text-gray-500">Scheduled Date</div>
                       <div className="relative">
                         <FiCalendar className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
                         <input
@@ -228,26 +229,28 @@ export default function Bills() {
                   </div>
 
                   <div className="space-y-4">
-                    <label className="text-sm font-bold uppercase tracking-wider text-gray-500 block">Select Payment Method</label>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {paymentMethods.map((method) => (
-                        <button
-                          key={method.id}
-                          type="button"
-                          onClick={() => setSelectedMethod(method.id)}
-                          className={`flex flex-col items-center gap-3 p-6 rounded-3xl border transition-all ${
-                            selectedMethod === method.id 
-                              ? 'border-black bg-black/5 ring-1 ring-black' 
-                              : 'border-gray-100 bg-white hover:border-gray-300'
-                          }`}
-                        >
-                          <div className={selectedMethod === method.id ? 'text-black' : 'text-gray-400'}>
-                            {method.icon}
-                          </div>
-                          <span className="text-xs font-bold text-center">{method.name.split(' ')[0]}</span>
-                        </button>
-                      ))}
-                    </div>
+                    <fieldset>
+                      <legend className="text-sm font-bold uppercase tracking-wider text-gray-500 block mb-4">Select Payment Method</legend>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {paymentMethods.map((method) => (
+                          <button
+                            key={method.id}
+                            type="button"
+                            onClick={() => setSelectedMethod(method.id)}
+                            className={`flex flex-col items-center gap-3 p-6 rounded-3xl border transition-all ${
+                              selectedMethod === method.id
+                                ? 'border-black bg-black/5 ring-1 ring-black'
+                                : 'border-gray-100 bg-white hover:border-gray-300'
+                            }`}
+                          >
+                            <div className={selectedMethod === method.id ? 'text-black' : 'text-gray-400'}>
+                              {method.icon}
+                            </div>
+                            <span className="text-xs font-bold text-center">{method.name.split(' ')[0]}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </fieldset>
                   </div>
 
                   <div className="border-t border-gray-50 pt-8 flex items-center justify-between">

@@ -33,8 +33,14 @@ export default function Dashboard() {
   const [isOpenAccountOpen, setIsOpenAccountOpen] = useState(false);
   const [newAccountData, setNewAccountData] = useState({
     accountType: 'SAVINGS',
-    currency: 'USD'
+    currency: 'USD',
+    amount: ''
   });
+
+  const handleOpenAccountClick = () => {
+    setNewAccountData({ accountType: 'SAVINGS', currency: 'USD', amount: '' });
+    setIsOpenAccountOpen(true);
+  };
 
   const { period } = usePeriod({ timeZone: user?.timezone });
 
@@ -80,10 +86,11 @@ export default function Dashboard() {
     try {
       await accountAPI.createAccount({
         accountType: newAccountData.accountType,
-        currency: newAccountData.currency
+        currency: newAccountData.currency,
+        amount: Number(newAccountData.amount)
       });
       setIsOpenAccountOpen(false);
-      setNewAccountData({ accountType: 'SAVINGS', currency: 'USD'});
+      setNewAccountData({ accountType: 'SAVINGS', currency: 'USD', amount: '' });
       await refreshData();
     } catch (err) {
       console.error('Open account error:', err);
@@ -167,6 +174,13 @@ export default function Dashboard() {
               </svg>
             </button>
             <button
+              onClick={handleOpenAccountClick}
+              disabled={loading}
+              className="px-6 py-2.5 bg-white border border-gray-100 text-black rounded-xl font-bold text-sm hover:bg-gray-50 transition-all shadow-sm flex items-center gap-2 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <FiPlus /> New Account
+            </button>
+            <button
               onClick={() => setIsTopUpOpen(true)}
               disabled={loading || accounts.length === 0}
               className="px-6 py-2.5 bg-black text-white rounded-xl font-bold text-sm hover:bg-gray-800 transition-all shadow-sm flex items-center gap-2 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -247,7 +261,7 @@ export default function Dashboard() {
                 </div>
                 <p className="font-bold text-black">No accounts found</p>
                 <button
-                  onClick={() => setIsOpenAccountOpen(true)}
+                  onClick={handleOpenAccountClick}
                   className="text-gray-400 font-medium text-sm hover:text-black transition-colors"
                 >
                   Open your first account
