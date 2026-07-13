@@ -111,7 +111,7 @@ export default function Login() {
   }, [canUseGoogleSignIn, clientId, navigate, setSession]);
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 20 }}
