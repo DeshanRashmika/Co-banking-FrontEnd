@@ -104,13 +104,15 @@ export default function Navbar() {
               {/* Notifications */}
               <div className="relative" ref={notificationsRef}>
                 <button
-                  onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
-                  className={`p-2 rounded-full transition-colors ${isNotificationsOpen ? 'bg-gray-100 text-black' : 'text-gray-500 hover:bg-gray-50 hover:text-black'
+                  onClick={handleToggleNotifications}
+                  className={`p-2 rounded-full transition-colors relative ${isNotificationsOpen ? 'bg-gray-100 text-black' : 'text-gray-500 hover:bg-gray-50 hover:text-black'
                     }`}
                   aria-label="Notifications"
                 >
                   <FiBell className="w-5 h-5" />
-                  <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+                  {notifications.some(n => !n.read) && (
+                    <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+                  )}
                 </button>
 
                 {isNotificationsOpen && (
@@ -119,9 +121,27 @@ export default function Navbar() {
                       <h3 className="font-bold text-sm">Notifications</h3>
                     </div>
                     <div className="max-h-64 overflow-y-auto">
-                      <div className="px-4 py-4 text-center text-gray-400 text-sm">
-                        No new notifications
-                      </div>
+                      {notifLoading ? (
+                        <div className="px-4 py-6 flex justify-center">
+                          <div className="animate-spin rounded-full h-5 w-5 border-2 border-black/10 border-t-black"></div>
+                        </div>
+                      ) : notifications.length === 0 ? (
+                        <div className="px-4 py-4 text-center text-gray-400 text-sm">
+                          No new notifications
+                        </div>
+                      ) : (
+                        notifications.map((n) => (
+                          <button
+                            key={n.id}
+                            onClick={() => handleMarkAsRead(n.id)}
+                            className={`w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0 ${!n.read ? 'bg-blue-50/30' : ''}`}
+                          >
+                            <p className={`text-sm font-medium text-black ${!n.read ? 'font-bold' : ''}`}>{n.title || 'Notification'}</p>
+                            <p className="text-xs text-gray-400 mt-0.5 line-clamp-2">{n.message}</p>
+                            <p className="text-[10px] text-gray-300 mt-1">{new Date(n.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</p>
+                          </button>
+                        ))
+                      )}
                     </div>
                   </div>
                 )}
