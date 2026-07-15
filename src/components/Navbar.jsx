@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { notificationAPI } from '../services/api';
 import icon from '../assets/icon.png';
 import { FiSettings, FiBell, FiLogOut, FiUser, FiChevronDown } from 'react-icons/fi';
 
@@ -10,12 +11,41 @@ export default function Navbar() {
   const location = useLocation();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [notifLoading, setNotifLoading] = useState(false);
   const profileRef = useRef(null);
   const notificationsRef = useRef(null);
 
   const handleLogout = async () => {
     await logout();
     navigate('/login');
+  };
+
+  const handleToggleNotifications = async () => {
+    const opening = !isNotificationsOpen;
+    setIsNotificationsOpen(opening);
+    if (opening) {
+      setNotifLoading(true);
+      try {
+        const res = await notificationAPI.getNotifications();
+        setNotifications(res?.data || []);
+      } catch (err) {
+        console.error('Failed to load notifications:', err);
+      } finally {
+        setNotifLoading(false);
+      }
+    }
+  };
+
+  const handleMarkAsRead = async (notificationId) => {
+    try {
+      await notificationAPI.markAsRead(notificationId);
+      setNotifications((prev) =>
+        prev.map((n) => n.id === notificationId ? { ...n, read: true } : n)
+      );
+    } catch (err) {
+      console.error('Failed to mark notification as read:', err);
+    }
   };
 
   useEffect(() => {
