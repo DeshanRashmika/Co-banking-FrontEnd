@@ -177,7 +177,7 @@ export default function Bills() {
                       </p>
                       <div className="flex gap-4">
                         <button 
-                          onClick={() => setShowConfirm(false)}
+                          onClick={() => { setShowConfirm(false); setError(''); }}
                           className="flex-1 px-6 py-4 border border-gray-200 rounded-2xl font-bold hover:bg-gray-50 transition"
                         >
                           Cancel

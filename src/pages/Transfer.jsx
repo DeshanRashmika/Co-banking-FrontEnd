@@ -43,6 +43,7 @@ export default function Transfer() {
         setError('Please select both source and destination accounts.');
         return;
       }
+      setError('');
       setStep(2);
     } else if (step === 2) {
       const amount = Number.parseFloat(formData.amount);
@@ -56,9 +57,10 @@ export default function Transfer() {
         setError(`Insufficient funds. Available: $${sourceAccount.balance.toLocaleString()}`);
         return;
       }
+      // Bug #3: clear error when advancing step
+      setError('');
       setStep(3);
     }
-    setError('');
   };
 
   const handleConfirmTransfer = async () => {
@@ -227,7 +229,7 @@ export default function Transfer() {
                 exit={{ opacity: 0, x: -20 }}
                 className="space-y-10"
               >
-                <button onClick={() => setStep(1)} className="flex items-center gap-2 text-gray-400 font-bold hover:text-black transition-colors">
+                <button onClick={() => { setStep(1); setError(''); }} className="flex items-center gap-2 text-gray-400 font-bold hover:text-black transition-colors">
                   <FiArrowLeft /> Back to Selection
                 </button>
 
@@ -322,15 +324,16 @@ export default function Transfer() {
 
                 <div className="flex gap-4">
                   <button 
-                    onClick={() => setStep(2)}
+                    onClick={() => { setStep(2); setError(''); }}
                     className="flex-1 px-8 py-5 border-2 border-gray-100 rounded-[2rem] font-bold hover:bg-gray-50 transition-all active:scale-[0.98]"
                   >
                     Edit
                   </button>
+                  {/* Bug #9: flex-3 is not a valid Tailwind class — replaced with flex-[3] for grow ratio */}
                   <button 
                     onClick={handleConfirmTransfer}
                     disabled={loading}
-                    className="flex-3 px-12 py-5 bg-black text-white rounded-[2rem] font-bold text-xl hover:bg-gray-800 transition-all shadow-xl active:scale-[0.98] flex items-center justify-center gap-3 disabled:opacity-50"
+                    className="flex-[3] px-12 py-5 bg-black text-white rounded-[2rem] font-bold text-xl hover:bg-gray-800 transition-all shadow-xl active:scale-[0.98] flex items-center justify-center gap-3 disabled:opacity-50"
                   >
                     {loading ? (
                       <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />

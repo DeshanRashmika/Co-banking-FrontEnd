@@ -51,6 +51,11 @@ export default function Investments() {
     setMessage('');
 
     const shares = Number.parseInt(investmentForm.shares, 10);
+    if (Number.isNaN(shares) || shares <= 0) {
+      setError('Please enter a valid number of shares greater than zero.');
+      return;
+    }
+
     const totalCost = shares * marketPrice;
     const finalAccountId = activeAccountId;
     const selectedAccount = accounts.find(a => a.id === finalAccountId);
@@ -88,7 +93,7 @@ export default function Investments() {
   };
 
   const handleSell = async (holding) => {
-    if (!globalThis.confirm(`Are you sure you want to sell your ${holding.shares} shares of ${holding.symbol}?`)) return;
+    if (!window.confirm(`Are you sure you want to sell your ${holding.shares} shares of ${holding.symbol}?`)) return;
 
     try {
       await investmentAPI.sellInvestment(holding.id, {
@@ -244,7 +249,7 @@ export default function Investments() {
                     <select
                       id="investment-account"
                       name="accountId"
-                      value={activeAccountId} 
+                      value={investmentForm.accountId || activeAccountId}
                       onChange={handleChange}
                       required
                       className="w-full px-6 pr-12 py-4 bg-gray-50 border border-gray-100 rounded-2xl font-bold focus:outline-none focus:border-black appearance-none cursor-pointer transition-colors"
