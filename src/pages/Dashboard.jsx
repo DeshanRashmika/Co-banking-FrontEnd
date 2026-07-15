@@ -27,7 +27,10 @@ export default function Dashboard() {
   const [selectedMethod, setSelectedMethod] = useState('visa');
 
   const [activeAccountId, setActiveAccountId] = useState(null);
-  const selectedAccountId = activeAccountId || (accounts.length > 0 ? accounts[0].id : '');
+  const selectedAccountId = (() => {
+    if (activeAccountId && accounts.some(a => a.id === activeAccountId)) return activeAccountId;
+    return accounts.length > 0 ? accounts[0].id : '';
+  })();
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [isOpenAccountOpen, setIsOpenAccountOpen] = useState(false);
@@ -45,6 +48,7 @@ export default function Dashboard() {
   const { period } = usePeriod({ timeZone: user?.timezone });
 
   const fetchData = useCallback(async () => {
+    setLoading(true);
     try {
       const [accountsRes, notificationsRes] = await Promise.all([
         accountAPI.getAccounts(),
@@ -54,6 +58,7 @@ export default function Dashboard() {
       const accountsList = accountsRes?.data || [];
       setAccounts(accountsList);
       setNotifications(notificationsRes?.data || []);
+      setError('');
 
     } catch (err) {
       console.error('Dashboard data fetch error:', err);
@@ -66,9 +71,7 @@ export default function Dashboard() {
       setLoading(false);
     }
   }, []);
-
   const refreshData = useCallback(async () => {
-    setLoading(true);
     await fetchData();
   }, [fetchData]);
 
@@ -299,7 +302,10 @@ export default function Dashboard() {
                     </div>
                     <div className="text-right">
                       <p className={`font-bold text-sm ${n.message.toLowerCase().includes('received') || n.message.toLowerCase().includes('top up') ? 'text-green-600' : 'text-black'}`}>
-                        {n.message.toLowerCase().includes('received') || n.message.toLowerCase().includes('top up') ? '+' : '-'} $--.--
+                        {n.message.toLowerCase().includes('received') || n.message.toLowerCase().includes('top up') ? '+' : '-'}
+                        {(n.amount != null || n.data?.amount != null)
+                          ? ` $${Number(n.amount ?? n.data?.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                          : ' $--.--'}
                       </p>
                       <p className="text-[10px] text-gray-300 uppercase font-bold tracking-tighter mt-0.5">{new Date(n.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</p>
                     </div>
