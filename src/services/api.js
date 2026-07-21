@@ -93,4 +93,16 @@ export const notificationAPI = {
   deleteNotification: (notificationId) => api.delete(`/notifications/${notificationId}`),
 };
 
+export const cardAPI = {
+  getCards: () => api.get('/cards'),
+  getCardDetails: (cardId) => api.get(`/cards/${cardId}`),
+  addCard: (cardData) => api.post('/cards', cardData),
+  updateCard: (cardId, cardData) => api.put(`/cards/${cardId}`, cardData),
+  deleteCard: (cardId) => api.delete(`/cards/${cardId}`),
+  freezeCard: (cardId) => api.put(`/cards/${cardId}/freeze`),
+  unfreezeCard: (cardId) => api.put(`/cards/${cardId}/unfreeze`),
+  setDefaultCard: (cardId) => api.put(`/cards/${cardId}/default`),
+  getCardTransactions: (cardId) => api.get(`/cards/${cardId}/transactions`),
+};
+
 export default api;
