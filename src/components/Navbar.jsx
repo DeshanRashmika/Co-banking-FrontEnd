@@ -1,9 +1,11 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { notificationAPI } from '../services/api';
 import icon from '../assets/icon.png';
 import { FiSettings, FiBell, FiLogOut, FiUser, FiChevronDown } from 'react-icons/fi';
+import { useWebSocket } from '../hooks/useWebSocket';
+
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -15,6 +17,11 @@ export default function Navbar() {
   const [notifLoading, setNotifLoading] = useState(false);
   const profileRef = useRef(null);
   const notificationsRef = useRef(null);
+
+  const handleNewNotification = useCallback((data) => {
+    setNotifications((prev) => [data, ...prev]);
+  }, []);
+  useWebSocket(user?.id, handleNewNotification);
 
   const handleLogout = async () => {
     await logout();
@@ -69,6 +76,8 @@ export default function Navbar() {
     { name: 'History', path: '/transactions' },
   ];
 
+  const unreadCount = notifications.filter((n) => !n.read).length;
+
   return (
     <nav className="bg-white border-b border-gray-100 sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -87,8 +96,8 @@ export default function Navbar() {
                     key={link.path}
                     to={link.path}
                     className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${location.pathname === link.path
-                        ? 'text-black bg-gray-50'
-                        : 'text-gray-500 hover:text-black hover:bg-gray-50'
+                      ? 'text-black bg-gray-50'
+                      : 'text-gray-500 hover:text-black hover:bg-gray-50'
                       }`}
                   >
                     {link.name}
@@ -110,15 +119,20 @@ export default function Navbar() {
                   aria-label="Notifications"
                 >
                   <FiBell className="w-5 h-5" />
-                  {notifications.some(n => !n.read) && (
-                    <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+                  {unreadCount > 0 && (
+                    <span className="absolute -right-0.5 -top-0.5 flex min-w-5 h-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold text-white ring-2 ring-white">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
                   )}
                 </button>
 
                 {isNotificationsOpen && (
                   <div className="absolute right-0 mt-2 w-80 bg-white border border-gray-100 rounded-2xl shadow-xl py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-                    <div className="px-4 py-2 border-b border-gray-50">
-                      <h3 className="font-bold text-sm">Notifications</h3>
+                    <div className="px-4 py-2 border-b border-gray-50 flex items-center justify-between">
+                      <h3 className="font-semibold text-sm text-gray-900">Notifications</h3>
+                      {unreadCount > 0 && (
+                        <span className="text-xs font-medium text-red-500">{unreadCount} new</span>
+                      )}
                     </div>
                     <div className="max-h-64 overflow-y-auto">
                       {notifLoading ? (
